@@ -1,0 +1,18 @@
+# Ignorar diretórios específicos de ambientes
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar ambiente virtual
+venv/
+env/
+
+# Ignorar configurações de IDEs
+.vscode/
+.idea/
+
+# Ignorar arquivos de configuração do Vercel
+.vercel/
+
+# Ignorar arquivos temporários
+*.log
