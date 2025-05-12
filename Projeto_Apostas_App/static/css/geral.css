@@ -1,0 +1,27 @@
+.bet-notification {
+    position: fixed;
+    top: 50px;
+    right: 45%;
+    padding: 12px 18px;
+    background-color: #333;
+    color: #fff;
+    font-size: 15px;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 6px;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 1s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.bet-notification.success {
+    background-color: #28a745;
+}
+
+.bet-notification.error {
+    background-color: #dc3545;
+}
+
+.bet-notification.fade-out {
+    opacity: 0;
+}

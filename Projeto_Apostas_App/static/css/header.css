@@ -1,0 +1,468 @@
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  width: 100%; 
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  border-radius: 22px;
+  padding: 10px 20px;
+  width: 828px;
+  background-color: rgba(244, 162, 97, 0.5);
+}
+
+.search-icon {
+  width: 25px;
+  height: 25px;
+  margin-right: 10px;
+}
+
+.search-input {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 20px;
+  color: #000;
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+.search-input::placeholder {
+  color: #000;
+}
+
+#search-results {
+  display: none;  
+  position: absolute;
+  border-radius: 22px;
+  padding: 10px 20px;
+  width: 828px;
+  margin-top: 47px;
+  background-color: rgba(255, 255, 255, 0.9);  
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+#search-results::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Fundo  do scrollbar */
+#search-results::-webkit-scrollbar-track {
+  background: #fff;
+  border-radius: 5px;
+}
+
+/* Cor do scroll */
+#search-results::-webkit-scrollbar-thumb {
+  background: #f4a261;
+  border-radius: 5px;
+}
+
+#search-results div {
+  padding: 8px;
+  background-color: rgba(238, 238, 238, 0.7);  
+  border-radius: 8px;
+  margin-bottom: 5px;  
+  cursor: pointer;
+  color: #333;  
+}
+
+#search-results div:hover {
+  background-color: rgba(184, 184, 184, 0.7); 
+  color: #000;  
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.stats-container {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.bet-count {
+  border-radius: 25px;
+  padding: 15px 30px;
+  font-size: 20px;
+  color: #000;
+  cursor: pointer;
+  position: relative;
+  background-color: rgba(244, 162, 97, 0.5);
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.bet-count:hover {
+  background-color: #f4a261;
+  color: #fff;
+  transform: scale(1.02);
+}
+
+.count-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  color: #fff;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  font-size: 15px;
+  background-color: #f4a261;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bet-amount {
+  border-radius: 25px;
+  padding: 15px 30px;
+  font-size: 20px;
+  width: auto;
+  color: #000;
+  background-color: rgba(244, 162, 97, 0.5);
+  cursor: default;
+}
+
+.add-button {
+  border: none;
+  border-radius: 25px;
+  width: 46px;
+  height: 49px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(244, 162, 97, 0.5);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.add-button:hover {
+  background-color: #f4a261;
+  color: #fff;
+  transform: scale(1.02);
+}
+
+.add-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.betting-slip {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #f4a261;
+  border-radius: 25px;
+  z-index: 1000;
+  display: none;
+}
+
+.show {
+  display: block;
+}
+
+.betting-slip__header {
+  padding: 29px 29px 0 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.betting-slip__close {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.betting-slip__close-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Atualizado para usar flex */
+.betting-slip__details {
+  margin: 20px 39px;
+  padding: 20px;
+  border-radius: 25px;
+  position: relative;
+  background-color: #fff;
+  display: flex; /* NOVO: organiza imagem + info lado a lado */
+  align-items: center;
+  gap: 20px;
+}
+
+.betting-slip__details-close {
+  position: absolute;
+  right: 12px;
+  top: 13px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* NOVO: imagem do jogador */
+.betting-slip__image-container {
+  flex-shrink: 0;
+}
+
+.betting-slip__image-container img {
+  width: auto;
+  height: 100px;
+  border-radius: 50%;
+}
+
+/* NOVO: container do texto */
+.betting-slip__info-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.betting-slip__info {
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.betting-slip__match {
+  font-size: 0.9em;
+  color: #888;
+  margin-bottom: 5px;
+}
+
+.betting-slip__player {
+  font-weight: bold;
+  margin: 0;
+}
+
+.betting-slip__bet {
+  font-size: 1em;
+  margin: 5px 0;
+}
+
+.betting-slip__odds {
+  font-weight: bold;
+  color: #0a7;
+}
+
+.betting-slip__winnings {
+  color: #fff;
+  font-size: 25px;
+  font-weight: 400;
+  margin: 264px 39px 0;
+}
+
+.betting-slip__actions {
+  display: flex;
+  gap: 14px;
+  margin: 22px 39px;
+}
+
+.betting-slip__amount,
+.betting-slip__submit {
+  height: 67px;
+  border-radius: 25px;
+  color: #f4a261;
+  font-size: 25px;
+  font-weight: 400;
+  background-color: #fff;
+  border: none;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.betting-slip__amount {
+  width: 242px;
+  height: 67px;
+  border-radius: 25px;
+  color: #f4a261;
+  font-size: 25px;
+  font-weight: 400;
+  border: 2px solid #f4a261;
+  padding-left: 25px;
+  outline: none;
+  cursor: text;
+}
+
+.input-container {
+  position: relative;
+  display: inline-block;
+}
+
+.input-container::after {
+  content: "€";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 25px;
+  color: #f4a261;
+  font-weight: 400;
+}
+
+.betting-slip__amount::-webkit-inner-spin-button,
+.betting-slip__amount::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.betting-slip__submit {
+  width: 191px;
+}
+
+.betting-slip__submit:hover {
+  background-color: #f4a261;
+  color: #fff;
+  border: 3px solid #fff;
+}
+
+
+.saldo {
+  color: #fff;
+  display: flex;
+  text-align: left;
+  font-weight: bold;
+  margin-right: auto;
+  margin-left: 39px;
+}
+
+.bet-notification {
+  position: fixed;
+  top: 20px;
+  right: 40%;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: green;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  z-index: 1000;
+}
+
+.bet-notification.error {
+  background-color: rgb(179, 27, 27);
+}
+
+.fade-out {
+  opacity: 0;
+}
+
+
+/* Responsividade */
+@media (max-width: 991px) {
+  .betting-slip {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    min-height: 596px;
+  }
+
+  .betting-slip__actions {
+    flex-direction: row;
+    gap: 10px;
+    margin: 22px 20px;
+  }
+
+  .betting-slip__amount,
+  .betting-slip__submit {
+    width: 45%;
+  }
+}
+
+@media (max-width: 640px) {
+  .betting-slip {
+    border-radius: 15px;
+  }
+
+  .betting-slip__details {
+    margin: 20px 20px;
+  }
+
+  .betting-slip__winnings {
+    margin: 264px 20px 0;
+  }
+
+  .betting-slip__actions {
+    flex-direction: column;
+    gap: 10px;
+    margin: 22px 20px;
+  }
+
+  .betting-slip__amount,
+  .betting-slip__submit {
+    width: 100%;
+  }
+}
+
+
+/* Notificações */
+/* Estilo básico para as notificações */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 45%;
+  background-color: rgb(179, 27, 27);
+  color: white;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+  z-index: 9999;
+  opacity: 0;
+  animation: fadein 0.3s forwards, fadeout 0.5s 4.5s forwards; /* Fade in e fade out */
+}
+
+/* Notificação de sucesso */
+.notification.success {
+  background-color: #4CAF50;
+}
+
+/* Notificação de aviso */
+.notification.warning {
+  background-color: #ff9800;
+}
+
+/* Animação de fade-in */
+@keyframes fadein {
+  from { opacity: 0; top: 0; }
+  to { opacity: 1; top: 20px; }
+}
+
+/* Animação de fade-out (desaparecendo suavemente) */
+@keyframes fadeout {
+  from { opacity: 1; top: 20px; }
+  to { opacity: 0; top: 0; }
+}
+

@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ player.full_name }}</title>
+  <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}">
+  <link rel="stylesheet" href="{% static 'css/player_search.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/geral.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="dashboard">
+    {% include 'geral.html' %}
+    <main class="main-content">
+      {% include 'header.html' %}
+      {% include 'sidebar.html' %}
+
+      <div class="stats-tabs">
+        <div class="primary-tabs">
+          <a href="{% url 'player_details' player.player_id %}">
+            <button class="tab-button selected">Geral</button>
+          </a>
+
+          <!-- Estatísticas dinâmicas com player_stat -->
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='PTS' %}">
+            <button class="tab-button {% if current_stat == 'PTS' %}selected{% endif %}">PTS</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='AST' %}">
+            <button class="tab-button {% if current_stat == 'AST' %}selected{% endif %}">AST</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='REB' %}">
+            <button class="tab-button {% if current_stat == 'REB' %}selected{% endif %}">REB</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='PTS+AST' %}">
+            <button class="tab-button {% if current_stat == 'PTS+AST' %}selected{% endif %}">PTS+AST</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='PTS+REB' %}">
+            <button class="tab-button {% if current_stat == 'PTS+REB' %}selected{% endif %}">PTS+REB</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='AST+REB' %}">
+            <button class="tab-button {% if current_stat == 'AST+REB' %}selected{% endif %}">AST+REB</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='PTS+AST+REB' %}">
+            <button class="tab-button {% if current_stat == 'PTS+AST+REB' %}selected{% endif %}">PTS+AST+REB</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='BLK' %}">
+            <button class="tab-button {% if current_stat == 'BLK' %}selected{% endif %}">BLK</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='3PT' %}">
+            <button class="tab-button {% if current_stat == '3PT' %}selected{% endif %}">3PT</button>
+          </a>
+
+          <a href="{% url 'player_stat' player_id=player.player_id stat_type='STL' %}">
+            <button class="tab-button {% if current_stat == 'STL' %}selected{% endif %}">STL</button>
+          </a>
+        </div>
+      </div>
+
+      <article class="player-profile">
+        <img src="https://cdn.nba.com/headshots/nba/latest/1040x760/{{ player.player_id }}.png" class="player-photo"
+          alt="{{ player.full_name }} Photo" />
+        <div class="player-info">
+          <h2 class="player-name">{{ player.full_name }}</h2>
+          <p class="player-age">{{ player.age }} anos</p>
+          <p class="player-height">{{ player.height }}m</p>
+        </div>
+
+        <div class="player-stats-container">
+          <h3 class="stats-title">Média</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <p class="stat-value">{{ player.stats.points }}</p>
+              <p class="stat-label">Points</p>
+            </div>
+            <div class="stat-item">
+              <p class="stat-value">{{ player.stats.assists }}</p>
+              <p class="stat-label">Assists</p>
+            </div>
+            <div class="stat-item">
+              <p class="stat-value">{{ player.stats.rebounds }}</p>
+              <p class="stat-label">Rebounds</p>
+            </div>
+            <div class="stat-item">
+              <p class="stat-value">{{ player.stats.three_point }}</p>
+              <p class="stat-label">3PT</p>
+            </div>
+            <div class="stat-item">
+              <p class="stat-value">{{ player.stats.blocks }}</p>
+              <p class="stat-label">Blocks</p>
+            </div>
+            <div class="stat-item">
+              <p class="stat-value">{{ player.stats.steals }}</p>
+              <p class="stat-label">Steals</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+        <div class="team-info">
+          <div class="injury-report" onclick="toggleInjuryReport()">
+              <img src="{% static 'Images/injury.png' %}" class="injury-icon" alt="Injury Report" />
+              <p class="injury-text">Injury Reports</p>
+          </div>
+
+          <div class="modal-container" id="InjuryReport">
+              <div class="card-header">
+                  <h2 class="header-title">Últimas Lesões</h2>
+                  <button class="close-button" onclick="toggleInjuryReport()">
+                      <img src="{% static 'Images/x.png' %}" alt="Close" class="betting-slip__close-icon" />
+                  </button>
+              </div>
+              <div class="card-content">
+                  <div class="content-body">
+                      <p class="column-title">Lesão</p>
+                      {% for injury in injuries|slice:":10" %}
+                      <p class="column-dados">{{ injury.date }}</p>
+                      {% endfor %}
+                  </div>
+                  <div class="content-body">
+                      <p class="column-title">Data</p>
+                      {% for injury in injuries|slice:":10" %}
+                      <p class="column-dados">{{ injury.injury }}</p>
+                      {% endfor %}
+                  </div>
+              </div>
+          </div>
+
+          <img src="https://cdn.nba.com/logos/nba/{{ player.team_id }}/global/L/logo.svg" class="team-logo"
+              alt="Team Logo" />
+          <p class="team-name">{{ player.team_name }}</p>
+      </div>
+      </section>  
+
+      <section class="recent-games">
+
+        <div class="games-table-header">
+          <p class="table-header-cell">Date</p>
+          <p class="table-header-cell">Matchup</p>
+          <p class="table-header-cell">Minutes</p>
+          <p class="table-header-cell">Points</p>
+          <p class="table-header-cell">Assists</p>
+          <p class="table-header-cell">Rebounds</p>
+          <p class="table-header-cell">3PT</p>
+          <p class="table-header-cell">Blocks</p>
+          <p class="table-header-cell">Steals</p>
+        </div>
+
+        <div class="games-table">
+          {% for game in player.last_10_games %}
+          <div class="game-row">
+            <p class="game-cell">{{ game.GAME_DATE|date:"d-m-Y" }}</p>
+            <p class="game-cell">{{ game.MATCHUP }}</p>
+            <p class="game-cell">{{ game.MIN }}</p>
+            <p class="game-cell">{{ game.PTS }}</p>
+            <p class="game-cell">{{ game.AST }}</p>
+            <p class="game-cell">{{ game.REB }}</p>
+            <p class="game-cell">{{ game.FG3M }}</p>
+            <p class="game-cell">{{ game.BLK }}</p>
+            <p class="game-cell">{{ game.STL }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+  </div>
+  </div>
+  <script src="{% static 'js/player_search.js' %}"></script>
+  <script src="{% static 'js/sidebar.js' %}"></script>
+  <script src="{% static 'js/header.js' %}"></script>
+  <script src="{% static 'js/player_stat.js' %}"></script>
+  <script src="{% static 'js/geral.js' %}"></script>
+</body>
+
+</html>

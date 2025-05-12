@@ -1,0 +1,318 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página Inicial</title>
+  <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}">
+  <link rel="stylesheet" href="{% static 'css/index.css' %}">
+  <link rel="stylesheet" href="{% static 'css/geral.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/header.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="dashboard">
+    {% include 'geral.html' %}
+    <div class="main-content" style="gap: 50px;">
+      {% include 'header.html' %}
+      {% include 'sidebar.html' %}
+
+      <div class="grid-section">
+        <div class="mybets-section">
+          <div class="mybets-title">
+            <h2 class="section-title">Minhas Apostas</h2>
+            <div class="dropdown">
+              <button class="dropdown-btn" onclick="toggleDropdown()">
+                <span>
+                  {% if filtro == 'hoje' %}Hoje
+                  {% elif filtro == 'ontem' %}Ontem
+                  {% elif filtro == '2dias' %}Últimos 2 dias
+                  {% elif filtro == '7dias' %}Últimos 7 dias
+                  {% elif filtro == '15dias' %}Últimos 15 dias
+                  {% elif filtro == 'pendentes' %}Pendentes
+                  {% else %}Filtrar Por Data
+                  {% endif %}
+                </span>
+                <img src="{% static 'Images/seta.png' %}" alt="Dropdown Icon" class="dropdown-icon">
+              </button>
+
+              <div class="dropdown-content" id="dropdownMenu">
+                <a href="?filtro=hoje">Hoje</a>
+                <a href="?filtro=ontem">Ontem</a>
+                <a href="?filtro=2dias">Últimos 2 dias</a>
+                <a href="?filtro=7dias">Últimos 7 dias</a>
+                <a href="?filtro=15dias">Últimos 15 dias</a>
+                <a href="?filtro=pendentes">Pendentes</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="betting-content">
+
+            {% for aposta in apostas %}
+            <div class="mybet-card" onclick="window.location.href='{% url 'game_stats' aposta.jogo_id %}'">
+              <div class="mybet-bet-details"
+                style="display: flex; align-items: center; justify-content: space-between;">
+                <p class="mybet-bet-type" style="font-weight: bolder;">{{ aposta.jogador }} - {{ aposta.tipo_aposta }}
+                </p>
+
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  {% if aposta.status == "ganha" %}
+                  <img src="{% static 'Images/certo green.png' %}" alt="Win" class="resultado-img">
+                  <h2 class="resultado-text-victory" style="font-size: 25px; font-weight: bolder;">Won</h2>
+                  {% elif aposta.status == "perdida" %}
+                  <img src="{% static 'Images/red x.png' %}" alt="Lose" class="resultado-img">
+                  <h2 class="resultado-text-lose" style="font-size: 25px; font-weight: bolder;">Lost</h2>
+                  {% endif %}
+                  <p class="mybet-bet-value" style="color: #fffae6;">{{ aposta.odds }}</p>
+                </div>
+              </div>
+
+              <p class="game-info">{{ aposta.home_team }} vs {{ aposta.away_team }}</p>
+              <div class="mybet-bet-details">
+                <p class="game-info">{{ aposta.data_jogo }}</p>
+                <p class="mybet-bet-value">{{ aposta.valor_apostado }} € ➔ {{ aposta.possiveis_ganhos }} €</p>
+              </div>
+            </div>
+            {% endfor %}
+
+            {# -- Apostas Múltiplas -- #}
+            {% for aposta_multipla in apostas_multipla %}
+            <div class="multiple-bets">
+              <div class="multiple-bets-header"
+                style="display: flex; align-items: center; justify-content: space-between;">
+                <span class="multiple-title">Múltipla</span>
+
+                <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
+                  {% if aposta_multipla.status == "ganha" %}
+                  <img src="{% static 'Images/certo green.png' %}" alt="Win" class="resultado-img">
+                  <h2 class="resultado-text-victory" style="font-size: 25px; font-weight: bolder;">Won</h2>
+                  {% elif aposta_multipla.status == "perdida" %}
+                  <img src="{% static 'Images/red x.png' %}" alt="Lose" class="resultado-img">
+                  <h2 class="resultado-text-lose" style="font-size: 25px; font-weight: bolder;">Lost</h2>
+                  {% endif %}
+                  <p class="mybet-bet-value" style="color: #fffae6; margin-right: 10px;">{{ aposta_multipla.total_odds }}</p>
+                </div>
+
+                <img src="{% static 'Images/seta.png' %}" class="arrow-icon">
+              </div>
+
+              <div class="multiple-bets-content">
+                {% for aposta in aposta_multipla.apostas.all %}
+                <div class="bet-item" data-game-id="{{ aposta.jogo_id }}"
+                  style="display: flex; justify-content: space-between; align-items: center;">
+
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="bet-player">{{ aposta.jogador }} - {{ aposta.tipo_aposta }}</span>
+                    <span class="bet-details" style="margin-top: 4px;">{{ aposta.home_team }} vs {{ aposta.away_team }}</span>
+                  </div>
+                  <p class="game-info">{{ aposta.data_jogo }}</p>
+
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    {% if aposta.status == "ganha" %}
+                    <img src="{% static 'Images/certo green.png' %}" alt="Win" class="resultado-img">
+                    <h2 class="resultado-text-victory" style="font-size: 20px; font-weight: bolder;">Won</h2>
+                    {% elif aposta.status == "perdida" %}
+                    <img src="{% static 'Images/red x.png' %}" alt="Lose" class="resultado-img">
+                    <h2 class="resultado-text-lose" style="font-size: 20px; font-weight: bolder;">Lost</h2>
+                    {% elif aposta.status == "cancelada" %}
+                    <img src="{% static 'Images/cancelada.png' %}" alt="Lose" class="resultado-img">
+                    <h2 class="resultado-text-lose" style="font-size: 20px; font-weight: bolder; color: grey;">Cancelada
+                    </h2>
+                    {% endif %}
+                    <span class="bet-odds">{{ aposta.odds }}</span>
+                  </div>
+
+                </div>
+                {% endfor %}
+
+                <div class="bet-summary">
+                  <span class="summary-text">Odd Total:</span>
+                  <span class="summary-odds" id="combinedOdd" style="color: #fffae6;">{{ aposta_multipla.total_odds }}</span>
+                  <span class="summary-text">Possíveis Ganhos:</span>
+                  <span class="summary-winnings" id="possibleWinnings">{{ aposta_multipla.possiveis_ganhos }} €</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+          </div>
+        </div>
+
+
+        <div class="bestbets-section">
+          <div class="bet-header">
+            <h2 class="section-title">Melhores Apostas</h2>
+            <div class="help-titles">
+              <h3 class="table-title">Risco</h3>
+              <h3 class="table-title">Odd</h3>
+            </div>
+          </div>
+          
+          <div class="betting-content">
+
+          {% if jogos %}
+            {% for jogo in jogos %}
+              {% for player in jogo.home_sugestoes %}
+                {% for sugestao in player.sugestoes %}
+                    <div class="bet-card">
+                      <div class="bet-info">
+                        <span class="player-name">{{ player.nome }}</span>
+                        <span class="bet-type">{{ sugestao.tendencia }} {{ sugestao.line }} {{ sugestao.stat }}</span>
+                        <span class="game-info">{{ jogo.away_team }} vs {{ jogo.home_team }}</span>
+                      </div>
+                      <div class="bet-stats">
+                        <span class="stat">
+                          {% if sugestao.tendencia == "OVER" %}
+                            {{ sugestao.over }}
+                          {% else %}
+                            {{ sugestao.under }}
+                          {% endif %}
+                        </span>
+                        <span class="odds">                          
+                          {% if sugestao.tendencia == "OVER" %}
+                            {{ sugestao.over_odds }}
+                          {% else %}
+                            {{ sugestao.under_odds }}
+                          {% endif %}
+                        </span>
+                        <button 
+                          class="bet-button"
+                          data-player="{{ player.nome }}"
+                          data-tipo="{{ sugestao.tendencia }}"
+                          data-linha="{{ sugestao.line|floatformat:'1'|cut:',' }}"
+                          data-stat="{{ sugestao.stat }}"
+                          data-odd="{% if sugestao.tendencia == 'OVER' %}{{ sugestao.over_odds|floatformat:'2'|cut:',' }}{% else %}{{ sugestao.under_odds|floatformat:'2'|cut:',' }}{% endif %}"
+                          data-jogo="{{ jogo.away_team }} vs {{ jogo.home_team }}"
+                          data-data="{{ jogo.full_date }}"
+                          data-player-id="{{ sugestao.player_id }}"
+                          data-game-id="{{ jogo.game_id }}">
+                          Apostar
+                      </button> 
+                      </div>
+                  </div>
+                {% endfor %}
+              {% endfor %}
+              {% for player in jogo.away_sugestoes %}
+                {% for sugestao in player.sugestoes %}
+                  <div class="betting-content">
+                    <div class="bet-card">
+                      <div class="bet-info">
+                        <span class="player-name">{{ player.nome }}</span>
+                        <span class="bet-type">{{ sugestao.tendencia }} {{ sugestao.line }} {{ sugestao.stat }}</span>
+                        <span class="game-info">{{ jogo.away_team }} vs {{ jogo.home_team }}</span>
+                      </div>
+                      <div class="bet-stats">
+                        <span class="stat">
+                          {% if sugestao.tendencia == "OVER" %}
+                            {{ sugestao.over }}
+                          {% else %}
+                            {{ sugestao.under }}
+                          {% endif %}
+                        </span>
+                        <span class="odds">                          
+                          {% if sugestao.tendencia == "OVER" %}
+                            {{ sugestao.over_odds }}
+                          {% else %}
+                            {{ sugestao.under_odds }}
+                          {% endif %}
+                        </span>
+                        <button 
+                          class="bet-button"
+                          data-player="{{ player.nome }}"
+                          data-tipo="{{ sugestao.tendencia }}"
+                          data-linha="{{ sugestao.line|floatformat:'1'|cut:',' }}"
+                          data-stat="{{ sugestao.stat }}"
+                          data-odd="{% if sugestao.tendencia == 'OVER' %}{{ sugestao.over_odds|floatformat:'2'|cut:',' }}{% else %}{{ sugestao.under_odds|floatformat:'2'|cut:',' }}{% endif %}"
+                          data-jogo="{{ jogo.away_team }} vs {{ jogo.home_team }}"
+                          data-data="{{ jogo.full_date }}"
+                          data-player-id="{{ sugestao.player_id }}"
+                          data-game-id="{{ jogo.game_id }}">
+                          Apostar
+                      </button> 
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% endfor %}
+            {% endfor %}
+          {% else %}
+            <div class="no-bets-message">
+              Nenhuma sugestão de aposta disponível no momento.
+            </div>
+          {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-section">
+        <div class="games-section" onclick="window.location.href='{% url 'next_games' %}'">
+          <h2 class="section-title">Próximos Jogos</h2>
+          <div class="betting-content">
+            {% for game in game_data_future %}
+            <div class="game-card" onclick="window.location.href='{% url 'game_stats' game.game_id %}'">
+              <div class="team-info">
+                <div class="team-logos">
+                  <img src="https://cdn.nba.com/logos/nba/{{ game.away_team_id }}/global/L/logo.svg"
+                    alt="{{ game.away_team }}" class="team-logo" />
+                  <img src="https://cdn.nba.com/logos/nba/{{ game.home_team_id }}/global/L/logo.svg"
+                    alt="{{ game.home_team }}" class="team-logo" />
+                </div>
+                <div class="team-names">
+                  <p class="team-name">{{ game.away_team }}</p>
+                  <p class="team-name">{{ game.home_team }}</p>
+                </div>
+                <time class="game-time">{{ game.game_time }}</time>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="bestbets-section">
+          <h2 class="section-title">Live Games</h2>
+          <div class="betting-content">
+            {% for game in game_data_live %}
+            <div class="game-card" onclick="window.location.href='{% url 'game_stats' game.game_id %}'">
+              <div class="team-info">
+                <div class="team-logos">
+                  <img src="https://cdn.nba.com/logos/nba/{{ game.away_team_id }}/global/L/logo.svg"
+                    alt="{{ game.away_team }}" class="team-logo" />
+                  <img src="https://cdn.nba.com/logos/nba/{{ game.home_team_id }}/global/L/logo.svg"
+                    alt="{{ game.home_team }}" class="team-logo" />
+                </div>
+                <div class="team-names">
+                  <p class="team-name">{{ game.away_team }}</p>
+                  <p class="team-name">{{ game.home_team }}</p>
+                </div>
+                <img src="{% static 'Images/live.png' %}" alt="informações" class="live-image">
+                <div class="scoreboard-live">
+                  <div class="team-score-live">
+                    <span>{{ game.away_team_score }}</span> - <span>{{ game.home_team_score }}</span>
+                  </div>
+                  <div class="live-meta">
+                    <span>{{ game.period }}º Período -</span>
+                    <span>{{ game.game_clock }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/header.js' %}"></script>
+<script src="{% static 'js/index.js' %}"></script>
+<script src="{% static 'js/geral.js' %}"></script>
+
+
+</html>

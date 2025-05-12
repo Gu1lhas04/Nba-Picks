@@ -1,0 +1,366 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+body {
+    background-color: #f9f9f9;
+    color: #333;
+    font-size: 16px;
+    line-height: 1.5;
+    font-family: "JetBrains Mono", monospace;
+}
+.dashboard {
+    padding: 20px;
+}
+h1 {
+    margin-top: 30px;
+    font-size: 2.5em;
+    color: #f4a261;
+    text-align: center;
+    margin-bottom: 40px;
+}
+.teams-container {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.team-section {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 48%;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+}
+/* Tabela limpa e elegante */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1em;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th {
+    background-color: #f4a261;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 14px 16px;
+    text-align: center;
+}
+
+td {
+    padding: 14px 16px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    background-color: #fafafa;
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:hover td {
+    background-color: #f1f1f1;
+}
+
+/* Coluna do nome do jogador */
+td.player-name {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+    text-align: left;
+}
+
+td.player-name img.player-image {
+    width: 110px;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9em;
+    }
+
+    td.player-name img.player-image {
+        width: 40px;
+        height: 40px;
+    }
+
+    th, td {
+        padding: 10px 12px;
+    }
+}
+
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 900px;
+    margin: 30px auto;
+    gap: 60px;
+    padding: 25px 40px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ffffff, #fdf0e6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #ececec;
+    transition: all 0.3s ease-in-out;
+}
+
+.team-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 150px;
+    gap: 10px;
+}
+
+.team-logo-small {
+    width: 90px;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+.team-logo-small:hover {
+    transform: scale(1.05);
+}
+
+.team-name-small {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.score {
+    font-size: 28px;
+    font-weight: 800;
+    color: #e76f51;
+}
+
+.game-meta {
+    text-align: center;
+    flex: 1;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #444;
+}
+
+.game-meta h3 {
+    margin: 6px 0;
+    font-size: 20px;
+    color: #555;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .game-info {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .team-score {
+        width: auto;
+    }
+
+    .game-meta h3 {
+        font-size: 18px;
+    }
+}
+
+
+/* Modal de Confirmação de Aposta */
+.confirm-bet-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 400px;
+    background: white;
+    border-radius: 12px;
+    z-index: 1001;
+    display: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.confirm-bet-content {
+    padding: 20px;
+    position: relative;
+}
+
+.confirm-bet-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.confirm-bet-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.confirm-bet-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.confirm-bet-player {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.confirm-bet-player img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.confirm-bet-player h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.confirm-bet-player p {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.confirm-bet-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+}
+
+.confirm-bet-details div {
+    text-align: center;
+}
+
+.confirm-bet-details span {
+    display: block;
+    color: #666;
+    font-size: 14px;
+}
+
+.confirm-bet-details strong {
+    font-size: 16px;
+    color: #333;
+}
+
+.confirm-bet-add-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.in-court-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 10px;
+    background-color: #e0f8e0;
+    color: #2e7d32;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 12px;
+    border: 1px solid #b2dfdb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: background-color 0.3s ease;
+    animation: pulse 1.8s infinite ease-in-out;
+}
+
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.85;
+    }
+}
+
+
+/* RESPONSIVIDADE AVANÇADA */
+@media (max-width: 1024px) {
+    .team-section {
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+
+    .score {
+        font-size: 24px;
+    }
+
+    .game-meta h3 {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .teams-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .team-section {
+        padding: 10px;
+    }
+
+    td.player-name {
+        gap: 10px;
+        font-size: 0.9em;
+    }
+
+    td.player-name img.player-image {
+        width: 60px;
+    }
+
+    .in-court-tag {
+        font-size: 12px;
+        padding: 2px 6px;
+    }
+
+    table {
+        font-size: 0.85em;
+    }
+
+    th, td {
+        padding: 10px;
+    }
+
+    .game-info {
+        gap: 20px;
+        padding: 20px;
+        flex-direction: column;
+    }
+}

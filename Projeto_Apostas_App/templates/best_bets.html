@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Best Bets</title>
+    <link rel="icon" type="image/png" href="{% static 'images/bola.png' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bestbets.css' %}">
+    <link rel="stylesheet" href="{% static 'css/geral.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="dashboard">
+        {% include 'geral.html' %}
+        <div class="main-content">
+            {% include 'header.html' %}
+            {% include 'sidebar.html' %}
+
+            <div class="section-header">
+                <h1 class="page-title">Melhores Apostas</h1>
+                <img src="{% static 'images/i.png' %}" alt="informacoes" class="info-icon">
+                <div class="dropdown">
+                    <button class="dropdown-btn" onclick="toggleDropdown()">
+                        <span>Ordenar Por</span>
+                        <img src="{% static 'images/seta.png' %}" alt="Dropdown Icon" class="dropdown-icon">
+                    </button>
+                    <div class="dropdown-content" id="dropdownMenu">
+                        <a href="#">Data</a>
+                        <a href="#">Menor Risco</a>
+                        <a href="#">Odd</a>
+                    </div>
+                </div>
+            </div>
+            <div class="bet-container">
+                <div class="betting-content">
+                    {% for jogo in jogos %}
+                    <h3 class="mb-3">{{ jogo.away_team }} @ {{ jogo.home_team }} <span class="game-time">{{ jogo.game_time }}</span></h3>
+
+                    {% for jogador in jogo.away_sugestoes %}
+                    {% for sugestao in jogador.sugestoes %}
+                    <div class="bet-card">
+                        <div class="bet-info">
+                            <h2 class="player-name">
+                                {{ jogador.nome }} -
+                                <span class="over-under" style="color: #ffebcd; margin-left: 7px;">
+                                    {{ sugestao.tendencia }} {{ sugestao.line }} {{ sugestao.stat }}
+                                </span>
+                            </h2>
+                            <div class="teams-container">
+                                <div class="team">
+                                    <span class="team-name">{{ jogo.away_team }}</span>
+                                </div>
+                                <span class="game-time">{{ jogo.game_time }}</span>
+                                <div class="team">
+                                    <span class="team-name">{{ jogo.home_team }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bet-stats">
+                            <span class="stat">
+                                {% if sugestao.tendencia == "OVER" %}
+                                {{ sugestao.over }}
+                                {% else %}
+                                {{ sugestao.under }}
+                                {% endif %}
+                            </span>
+
+                            <span class="odds">
+                                {% if sugestao.tendencia == "OVER" %}
+                                {{ sugestao.over_odds }}
+                                {% else %}
+                                {{ sugestao.under_odds }}
+                                {% endif %}
+                            </span>
+
+                            <button 
+                                class="bet-button"
+                                data-player="{{ jogador.nome }}"
+                                data-tipo="{{ sugestao.tendencia }}"
+                                data-linha="{{ sugestao.line|floatformat:'1'|cut:',' }}"
+                                data-stat="{{ sugestao.stat }}"
+                                data-odd="{% if sugestao.tendencia == 'OVER' %}{{ sugestao.over_odds|floatformat:'2'|cut:',' }}{% else %}{{ sugestao.under_odds|floatformat:'2'|cut:',' }}{% endif %}"
+                                data-jogo="{{ jogo.away_team }} vs {{ jogo.home_team }}"
+                                data-data="{{ jogo.full_date }}"
+                                data-player-id="{{ sugestao.player_id }}"
+                                data-game-id="{{ jogo.game_id }}">
+                                Apostar
+                            </button>
+                        
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+
+                    {% for jogador in jogo.home_sugestoes %}
+                    {% for sugestao in jogador.sugestoes %}
+                    <div class="bet-card">
+                        <div class="bet-info">
+                            <h2 class="player-name">
+                                {{ jogador.nome }} -
+                                <span class="over-under" style="color: #ffebcd; margin-left: 7px;">
+                                    {{ sugestao.tendencia }} {{ sugestao.line }} {{ sugestao.stat }}
+                                </span>
+                            </h2>
+                            <div class="teams-container">
+                                <div class="team">
+                                    <span class="team-name">{{ jogo.away_team }}</span>
+                                </div>
+                                <span class="game-time">{{ jogo.game_time }}</span>
+                                <div class="team">
+                                    <span class="team-name">{{ jogo.home_team }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bet-stats">
+                            <span class="stat">
+                                {% if sugestao.tendencia == "OVER" %}
+                                {{ sugestao.over }}
+                                {% else %}
+                                {{ sugestao.under }}
+                                {% endif %}
+                            </span>
+
+                            <span class="odds">
+                                {% if sugestao.tendencia == "OVER" %}
+                                {{ sugestao.over_odds }}
+                                {% else %}
+                                {{ sugestao.under_odds }}
+                                {% endif %}
+                            </span>
+
+                            <button 
+                                class="bet-button"
+                                data-player="{{ jogador.nome }}"
+                                data-tipo="{{ sugestao.tendencia }}"
+                                data-linha="{{ sugestao.line|floatformat:'1'|cut:',' }}"
+                                data-stat="{{ sugestao.stat }}"
+                                data-odd="{% if sugestao.tendencia == 'OVER' %}{{ sugestao.over_odds|floatformat:'2'|cut:',' }}{% else %}{{ sugestao.under_odds|floatformat:'2'|cut:',' }}{% endif %}"
+                                data-jogo="{{ jogo.away_team }} vs {{ jogo.home_team }}"
+                                data-data="{{ jogo.full_date }}"
+                                data-player-id="{{ sugestao.player_id }}"
+                                data-game-id="{{ jogo.game_id }}">
+                                Apostar
+                            </button>
+
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/header.js' %}"></script>
+    <script src="{% static 'js/geral.js' %}"></script>
+    <script src="{% static 'js/best_bets.js' %}"></script>
+    <script>
+       
+    </script>
+
+
+</body>
+
+</html>

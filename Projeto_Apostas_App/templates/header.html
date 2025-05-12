@@ -1,0 +1,78 @@
+{% load static %}
+
+<div class="header">
+  <div class="header-left">
+    <div class="search-container" id="search-container">
+      <img src="{% static 'Images/search.png' %}" alt="Search" class="search-icon" />
+      <input type="text" id="search-input" name="query" placeholder="Pesquisar jogador..." class="search-input" oninput="searchPlayers()"> 
+    </div>
+
+    <div id="search-results"></div>
+  </div>
+
+  <div class="header-right">
+    <div class="stats-container">
+      <div class="bet-count" onclick="toggleBettingSlip()">
+        <span>Boletim</span>
+        <span class="count-badge">0</span>
+      </div>
+      <div class="bet-amount">{{ user.saldo }}€</div>
+      <button class="add-button" onclick="toggleAddMoney()">
+        <img src="{% static 'Images/plus (1).png' %}" alt="Add" class="add-icon" />
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="betting-slip" id="bettingSlip">
+  <div class="betting-slip__header">
+    <button class="betting-slip__close" onclick="toggleBettingSlip()">
+      <img src="{% static 'Images/x.png' %}" alt="Close" class="betting-slip__close-icon" />
+    </button>
+  </div>
+
+  <div id="bettingDetails" class="betting-slip__list"></div>
+
+  <form id="betForm" method="POST" action="{% url 'criar_aposta' %}">
+    {% csrf_token %}
+    <input type="hidden" name="apostas_data" id="apostasDataInput" />
+    <input type="hidden" name="valor_apostado" id="valorApostadoInput" />
+
+    <p class="betting-slip__winnings">Possíveis Ganhos: 0.00 €</p>
+    
+    <div class="betting-slip__actions">
+      <input type="number" class="betting-slip__amount" id="betAmount" value="10" min="1" step="1" />
+      <button class="betting-slip__submit" type="button" onclick="finalizeBet()">Apostar</button>
+    </div>
+  </form>
+</div>
+
+<div class="betting-slip" id="addMoney">
+  <div class="betting-slip__header">
+    <h2 class="saldo">Carteira: {{ user.saldo }} €</h2>
+    <button class="betting-slip__close" onclick="toggleAddMoney()">
+      <img src="{% static 'Images/x.png' %}" alt="Close" class="betting-slip__close-icon" />
+    </button>
+  </div>
+
+  <div class="betting-slip__details">
+    <h2 class="betting-slip__player">Quanto saldo deseja carregar?</h2>
+  </div>
+
+  <form method="POST" action="{% url 'carregar_saldo' %}">
+    {% csrf_token %}
+    <div class="betting-slip__actions">
+      <div class="input-container">
+        <!-- Mudança aqui para evitar duplicação de ID -->
+        <input type="number" class="betting-slip__amount" id="addMoneyInput" name="valor" value="10" min="1" step="1" />
+      </div>
+      <button class="betting-slip__submit" type="submit">Carregar</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const closeIconUrl = "{% static 'Images/x.png' %}";
+</script>

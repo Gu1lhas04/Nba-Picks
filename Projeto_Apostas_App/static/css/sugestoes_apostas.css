@@ -1,0 +1,103 @@
+/* sug_apostas.css */
+body {
+    background: #f4f6fa;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+.card {
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    border: none;
+}
+
+.card-header.bg-primary {
+    background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.card-header.bg-light {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e3e6ed;
+    font-weight: 500;
+}
+
+h2, h4, h5, h6 {
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+}
+
+h2 {
+    color: #1e3c72;
+    font-weight: 700;
+}
+
+h5 {
+    color: #2a5298;
+    font-weight: 600;
+}
+
+.table {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+    text-align: center;
+    font-size: 15px;
+    padding: 8px 6px;
+}
+
+.table th {
+    background: #e3e6ed;
+    color: #1e3c72;
+    font-weight: 600;
+    border-bottom: 2px solid #d1d5db;
+}
+
+.badge {
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.bg-success {
+    background: #27ae60 !important;
+    color: #fff !important;
+}
+
+.bg-warning {
+    background: #f1c40f !important;
+    color: #222 !important;
+}
+
+.bg-danger {
+    background: #e74c3c !important;
+    color: #fff !important;
+}
+
+.card-body {
+    background: #f9fafb;
+}
+
+@media (max-width: 900px) {
+    .row {
+        flex-direction: column;
+    }
+    .col-md-6 {
+        width: 100%;
+        margin-bottom: 24px;
+    }
+    .card {
+        margin-bottom: 24px;
+    }
+}

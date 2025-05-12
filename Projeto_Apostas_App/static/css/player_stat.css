@@ -1,0 +1,334 @@
+/* Itens do Bet Slip */
+.bet-item {
+    position: relative;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    background-color: #fafafa;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bet-item-remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.bet-item-remove img {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.bet-item-remove:hover img {
+    opacity: 1;
+}
+
+.bet-item-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.bet-item-content img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+}
+
+.bet-item-content div {
+    flex-grow: 1;
+}
+
+.bet-item-content h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.bet-item-content p {
+    margin: 2px 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.bet-item-content span {
+    font-size: 14px;
+    color: #333;
+}
+
+.bet-item-content strong {
+    font-size: 16px;
+    color: #4CAF50;
+}
+
+
+
+/* Estilos para o modal de confirmação */
+.confirm-bet-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 450px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 1000;
+    padding: 20px;
+}
+
+.confirm-bet-content {
+    position: relative;
+}
+
+.confirm-bet-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.confirm-bet-player {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0px;
+}
+
+.confirm-bet-player img {
+    width: 120px;
+    height: auto;
+    border-radius: 50%;
+}
+
+.confirm-bet-details {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+
+.confirm-bet-game-info {
+    padding: 15px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    border: 1px solid #f8f8f867;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+.game-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#nextGameInfo p {
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
+.loading-text {
+    color: #666;
+    font-style: italic;
+}
+
+.confirm-bet-header {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.confirm-bet-header h3 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.confirm-bet-add-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: white; 
+    color: #F4A261;
+    border: 2px solid #F4A261;
+    border-radius: 12px; 
+    font-weight: bolder;
+    font-size: 19px; 
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease, transform 0.3s ease; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+.confirm-bet-add-btn:hover {
+    background-color: #F4A261; 
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); 
+}
+
+.close-img {
+    width: 25px;
+    height: 25px;
+}
+
+.team-logo-small {
+    width: 90px;
+    height: auto;
+}
+
+.time-games {
+    display: flex;
+    flex-direction: column;
+    margin: 0px 15px;
+    align-items: center;
+    gap: 10px;
+}
+
+.game-teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+    background-color: #f8f8f8;
+}
+
+.game-teams p {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 10px;
+    color: #333;
+}
+
+.game-teams .clock {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 5px 15px;
+    border-radius: 20px;
+    margin-left: 10px;
+    background-color: rgba(244, 162, 97, 1);
+    color: white;
+    text-align: center;
+}
+
+.selection-buttons {
+    display: flex;
+    justify-content: space-between; /* Distribui os elementos esquerda e direita */
+    align-items: center;
+    margin: 20px 0;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.left-buttons, .right-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.selection-btn {
+    flex: 1;
+    border: none;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.selection-btn.selected {
+    background-color: rgba(244, 162, 97, 1);
+    color: white;
+}
+
+.selection-btn:not(.selected) {
+    background-color: rgba(244, 162, 97, 0.75);
+    color: #fff;
+}
+
+.refresh_line_btn{
+    background-color: rgba(244, 162, 97, 0.75);
+    border: none;
+    padding: 12px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 25px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.refresh_line_btn:hover {
+    background-color: rgba(244, 162, 97, 1);
+    transform: scale(1.05);
+}
+
+.line-btn {
+    background-color: rgba(244, 162, 97, 0.75);
+    border: none;
+    padding: 12px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    width: 35px;
+    border-radius: 25px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.line-btn:hover {
+    background-color: rgba(244, 162, 97, 1);
+    transform: scale(1.05);
+}
+
+.custom-number-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Remove setas padrão */
+.line-btn::-webkit-outer-spin-button,
+.line-btn::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+.btn-increment, .btn-decrement {
+    background-color: rgba(244, 162, 97, 0.75);
+    border: none;
+    padding: 10px 15px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    line-height: 1;
+}
+
+.btn-increment:hover, .btn-decrement:hover {
+    background-color: rgba(244, 162, 97, 1);
+    transform: scale(1.1);
+}
+

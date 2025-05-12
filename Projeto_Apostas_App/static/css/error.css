@@ -1,0 +1,75 @@
+/* Fonte e Layout Geral */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7fb;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-image: url('https://www.transparenttextures.com/patterns/asfalt.png');
+    background-size: cover;
+}
+
+/* Container do erro */
+.error-container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 40px 50px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    max-width: 95%;
+    transition: transform 0.3s ease;
+}
+
+/* Efeito de hover no container */
+.error-container:hover {
+    transform: scale(1.05);
+}
+
+/* Título */
+.error-container h1 {
+    color: #e74c3c;
+    font-size: 48px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* Mensagens de erro */
+.error-container p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+/* Link para tentar novamente */
+.error-container a {
+    display: inline-block;
+    font-size: 16px;
+    color: #fff;
+    background-color: #3498db;
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+/* Hover e foco do botão */
+.error-container a:hover,
+.error-container a:focus {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(52, 152, 219, 0.5);
+}
+
+/* Adicionando uma animação de carregamento */
+.error-container .loading {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #777;
+    font-weight: bold;
+}

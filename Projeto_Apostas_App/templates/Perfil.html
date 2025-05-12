@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Page</title>
+  <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}">
+  <link rel="stylesheet" href="{% static 'css/Perfil.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/geral.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="dashboard">
+    {% include 'geral.html' %}
+    <div class="main-content">
+      {% include 'header.html' %}
+      {% include 'sidebar.html' %}
+      <section class="profile-section">
+        <div class="profile-image-container">
+          {% if request.user.foto_perfil %}
+          <img src="{{ request.user.foto_perfil.url }}" alt="Foto de Perfil" class="profile-image">
+          {% else %}
+          <img src="{% static 'Images/profile.png' %}" alt="Foto de Perfil" class="profile-image">
+          {% endif %}
+        </div>
+        <h1 class="profile-name">{{ user.nome_cliente }}</h1>
+        <div class="credentials">
+          <div class="credential-field">
+            <img src="{% static 'Images/profile.png' %}" alt="Profile icon" class="field-icon" />
+            <p class="field-value">{{ user.username }}</p>
+          </div>
+          <div class="credential-field">
+            <img src="{% static 'Images/lock.png' %}" alt="Lock icon" class="field-icon" />
+            <p class="field-value">**********</p>
+          </div>
+        </div>
+        <a href="{% url 'editar_perfil' %}">
+          <button class="edit-profile">Editar Perfil</button>
+        </a>
+      </section>
+    </div>
+  </div>
+</body>
+
+<script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/header.js' %}"></script>
+<script src="{% static 'js/geral.js' %}"></script>
+
+</html>

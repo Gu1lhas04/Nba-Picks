@@ -1,0 +1,569 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ player.full_name }} - {{ stat_label }}</title>
+    <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}">
+    <link rel="stylesheet" href="{% static 'css/player_search.css' %}">
+    <link rel="stylesheet" href="{% static 'css/player_stat.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/geral.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="dashboard">
+        {% include 'geral.html' %}
+        <div class="main-content">
+            {% include 'header.html' %}
+            {% include 'sidebar.html' %}
+                        
+            <!-- Modal de Confirmação de Aposta -->
+            <div class="confirm-bet-modal" id="confirmBetModal" style="display: none;">
+                <div class="confirm-bet-content">
+                    <div class="confirm-bet-header">
+                        <h2>Aposta</h2>
+                        <button class="confirm-bet-close" onclick="closeConfirmBetModal()">
+                            <img src="{% static 'Images/x.png' %}" alt="Close" class="close-img"/>
+                        </button>
+                    </div>
+
+                    <div class="confirm-bet-body">
+                        <div class="confirm-bet-player">
+                            <img src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.player_id }}.png" 
+                                alt="{{ player.full_name }}" />
+                            <div>
+                                <h2>{{ player.full_name }}</h2>
+                                <p>{{ player.team_name }}</p>
+                            </div>
+                        </div>
+
+                        <div class="confirm-bet-details">
+                            <div>
+                                <strong id="confirmBetType">Over {{ player.threshold }} {{ current_stat }}</strong>
+                            </div>
+                            <div>
+                                <strong id="confirmBetOdd">1.0</strong>
+                            </div>
+                        </div>
+
+                        <div class="confirm-bet-game-info">
+                            <div class="game-info-header">
+                                <div id="gameTeams" class="game-teams">
+                                    <img id="homeTeamLogo" src="" alt="Home Team Logo" class="team-logo-small" />
+                                    <div class="time-games">
+                                        <p id="gameDate"></p>  
+                                        <p class="clock" id="gameTime"></p>  
+                                    </div>
+                                    <img id="awayTeamLogo" src="" alt="Away Team Logo" class="team-logo-small" />
+                                </div>
+                                <div id="nextGameInfo"></div>
+                            </div>
+                        </div>
+
+                        <button class="confirm-bet-add-btn" onclick="addPlayerBetToSlip()">Adicionar</button>
+                    </div>
+                </div>
+            </div>
+
+            <section class="player-stats">
+                <!-- Botões de Navegação -->
+                <div class="stats-tabs">
+                    <div class="primary-tabs">
+                        <!-- Geração do link para detalhes do jogador -->
+                        <a href="{% url 'player_details' player_id=player.player_id %}">
+                            <button class="tab-button">Geral</button>
+                        </a>
+                    
+                        <!-- Estatísticas dinâmicas com player_stat -->
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='PTS' %}">
+                            <button class="tab-button {% if current_stat == 'PTS' %}selected{% endif %}">PTS</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='AST' %}">
+                            <button class="tab-button {% if current_stat == 'AST' %}selected{% endif %}">AST</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='REB' %}">
+                            <button class="tab-button {% if current_stat == 'REB' %}selected{% endif %}">REB</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='PTS+AST' %}">
+                            <button class="tab-button {% if current_stat == 'PTS+AST' %}selected{% endif %}">PTS+AST</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='PTS+REB' %}">
+                            <button class="tab-button {% if current_stat == 'PTS+REB' %}selected{% endif %}">PTS+REB</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='AST+REB' %}">
+                            <button class="tab-button {% if current_stat == 'AST+REB' %}selected{% endif %}">AST+REB</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='PTS+AST+REB' %}">
+                            <button class="tab-button {% if current_stat == 'PTS+AST+REB' %}selected{% endif %}">PTS+AST+REB</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='BLK' %}">
+                            <button class="tab-button {% if current_stat == 'BLK' %}selected{% endif %}">BLK</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='3PT' %}">
+                            <button class="tab-button {% if current_stat == '3PT' %}selected{% endif %}">3PT</button>
+                        </a>
+                    
+                        <a href="{% url 'player_stat' player_id=player.player_id stat_type='STL' %}">
+                            <button class="tab-button {% if current_stat == 'STL' %}selected{% endif %}">STL</button>
+                        </a>
+                    </div>
+                </div>
+
+
+                <article class="player-profile">
+                    <img src="https://cdn.nba.com/headshots/nba/latest/1040x760/{{ player.player_id }}.png"
+                        class="player-photo" alt="{{ player.full_name }} Photo" />
+                    <div class="player-info">
+                        <h2 class="player-name">{{ player.full_name }}</h2>
+                        <p class="player-age">{{ player.age }} anos</p>
+                        <p class="player-height">{{ player.height }}m</p>
+                    </div>
+
+                    <div class="button-choose-player" onclick="toggleDropdown('PlayersOut')">
+                        <div class="stats-without">
+                            <button class="stats-without-btn">
+                                <span id="btnText">Stats without Player</span>
+                                <img src="{% static 'Images/seta.png' %}" alt="Dropdown Icon" class="dropdown-icon">
+                            </button>
+                            <div class="stats-without-content" id="PlayersOut">
+                                {% if player.same_team_gtd or player.same_team_out %}
+                                    {% if player.same_team_gtd %}
+                                        {% for player in player.same_team_gtd %}
+                                            <a href="#" class="player-item" onclick="toggleSelection(this)">
+                                                {% if player.id %}
+                                                    <img src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.id }}.png"
+                                                         alt="{{ player.full_name }}" class="player-image" />
+                                                {% else %}
+                                                    <img src="{% static 'Images/default_player.png' %}"
+                                                         alt="{{ player.full_name }}" class="player-image" />
+                                                {% endif %}
+                                                <span class="player-name">{{ player.full_name }}</span>
+                                                <span class="status" data-status="doubtful">Doubtful</span>
+                                            </a>
+                                        {% endfor %}
+                                    {% endif %}
+                                    
+                                    {% if player.same_team_out %}
+                                        {% for player in player.same_team_out %}
+                                            <a href="#" class="player-item" onclick="toggleSelection(this)">
+                                                {% if player.id %}
+                                                    <img src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.id }}.png"
+                                                         alt="{{ player.full_name }}" class="player-image" />
+                                                {% else %}
+                                                    <img src="{% static 'Images/default_player.png' %}"
+                                                         alt="{{ player.full_name }}" class="player-image" />
+                                                {% endif %}
+                                                <span class="player-name">{{ player.full_name }}</span>
+                                                <span class="status" data-status="out">Out</span>
+                                            </a>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% else %}
+                                    <div class="player-name">
+                                        Nenhum jogador indisponível no momento.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="selectedCount">Players Selected: 0</div>
+                    </div>
+
+                    <div class="bet-buttons">
+                        <img src="{% static 'Images/i.png' %}" alt="Info" class="help-icon" />
+                        <button class="info-btn">
+                            <input type="text" class="info-input" id="amount" value="{{ player.odd }}" />
+                            <img src="{% static 'Images/edit.png' %}" alt="Info" class="info-icon" />
+                        </button>
+                        <button class="bet-btn" id="betButton">
+                            <span>Apostar</span>
+                        </button>
+                    </div>
+                </article>
+
+                <div class="team-info">
+                    <div class="injury-report" onclick="toggleInjuryReport()">
+                        <img src="{% static 'Images/injury.png' %}" class="injury-icon" alt="Injury Report" />
+                        <p class="injury-text">Injury Reports</p>
+                    </div>
+
+                    <div class="modal-container" id="InjuryReport">
+                        <div class="card-header">
+                            <h2 class="header-title">Últimas Lesões</h2>
+                            <button class="close-button" onclick="toggleInjuryReport()">
+                                <img src="{% static 'Images/x.png' %}" alt="Close" class="betting-slip__close-icon" />
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <div class="content-body">
+                                <p class="column-title">Lesão</p>
+                                {% for injury in injuries|slice:":10" %}
+                                <p class="column-dados">{{ injury.date }}</p>
+                                {% endfor %}
+                            </div>
+                            <div class="content-body">
+                                <p class="column-title">Data</p>
+                                {% for injury in injuries|slice:":10" %}
+                                <p class="column-dados">{{ injury.injury }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <img src="https://cdn.nba.com/logos/nba/{{ player.team_id }}/global/L/logo.svg" class="team-logo"
+                        alt="Team Logo" />
+                    <p class="team-name">{{ player.team_name }}</p>
+                </div>
+            </section>
+
+            <section class="recent-games">
+                <div class="selection-buttons">
+                    <div class="left-buttons">
+                        <button class="selection-btn" id="overBtn" onclick="selectBetType('Over')">
+                            <span>Over</span>
+                        </button>
+                        <button class="selection-btn" id="underBtn" onclick="selectBetType('Under')">
+                            <span>Under</span>
+                        </button>
+                    </div>
+                    <div class="right-buttons">
+                        <div class="custom-number-input">
+                            <button class="btn-decrement" onclick="changeThreshold(-1)">−</button>
+                            <input type="number" step="1" id="customLineInput" class="line-btn" value="{{ player.threshold }}" />
+                            <button class="btn-increment" onclick="changeThreshold(1)">+</button>
+                            <button onclick="applyCustomThreshold()" class="refresh_line_btn">Atualizar Linha</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="plotly-graph-div js-plotly-plot" style="height: 1000px; width: 1800px; margin-top: 30px;">
+                    <div id="dynamicChart" class="plotly-graph-div" style="width: 100%; height: auto;">
+                        {{ player.graph_html|safe }}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="{% static 'js/player_stat.js' %}"></script>
+    <script src="{% static 'js/geral.js' %}"></script>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/header.js' %}"></script>
+    <script src="{% static 'js/player_search.js' %}"></script>
+    <script>
+        window.playerData = {
+            fullName: "{{ player.full_name|escapejs }}",
+            playerId: "{{ player.player_id|escapejs }}",
+            teamName: "{{ player.team_name|escapejs }}",
+            averagePoints: "{{ player.average_points|escapejs }}",
+            odd: parseFloat("{{ player.odd|escapejs }}"),
+            statType: "{{ current_stat|escapejs }}",
+            threshold: "{{ player.threshold|escapejs }}"
+        };
+
+        async function applyCustomThreshold() {
+            try {
+                const customVal = parseFloat(document.getElementById("customLineInput").value);
+                if (isNaN(customVal)) {
+                    alert("Por favor, insira um valor numérico válido.");
+                    return;
+                }
+
+                const chartContainer = document.getElementById("dynamicChart");
+                if (!chartContainer) {
+                    console.error("Container do gráfico não encontrado");
+                    return;
+                }
+
+                const chartDiv = chartContainer.querySelector('.plotly-graph-div');
+                if (!chartDiv) {
+                    console.error("Div do gráfico Plotly não encontrada");
+                    return;
+                }
+
+                if (typeof Plotly === 'undefined') {
+                    console.error("Plotly não está carregado");
+                    return;
+                }
+
+                const currentData = chartDiv.data || [];
+                const barTraceIndex = currentData.findIndex(series => series.type === 'bar');
+                if (barTraceIndex === -1) {
+                    console.error("Nenhuma série de barras encontrada.");
+                    return;
+                }
+
+                let yValues = currentData[barTraceIndex].y;
+
+                // ✅ Corrigir acesso ao array real dentro do objeto especial do Plotly
+                if (typeof yValues === 'object' && yValues._inputArray instanceof Float32Array || yValues._inputArray instanceof Int8Array) {
+                    yValues = Array.from(yValues._inputArray);
+                } else if (!Array.isArray(yValues)) {
+                    console.error("yValues não é um array válido:", yValues);
+                    return;
+                }
+
+                const newColors = yValues.map(val => parseFloat(val) > customVal ? 'green' : 'red');
+
+                await Plotly.restyle(chartDiv, { 'marker.color': [newColors] }, [barTraceIndex]);
+
+                const layoutUpdates = {
+                    shapes: [{
+                        type: 'line',
+                        xref: 'paper',
+                        x0: 0,
+                        x1: 1,
+                        y0: customVal,
+                        y1: customVal,
+                        line: {
+                            color: 'blue',
+                            width: 2,
+                            dash: 'dash'
+                        }
+                    }],
+                    annotations: [{
+                        xref: 'paper',
+                        yref: 'y',
+                        x: 1.03,
+                        y: customVal,
+                        text: `${customVal.toFixed(1)}`,
+                        showarrow: false,
+                        font: {
+                            color: "blue",
+                            size: 14
+                        },
+                        align: "left"
+                    }]
+                };
+
+                await Plotly.relayout(chartDiv, layoutUpdates);
+
+                if (window.playerData) {
+                    window.playerData.threshold = customVal;
+                }
+
+            } catch (error) {
+                console.error("Erro geral ao aplicar threshold:", error);
+            }
+        }
+
+
+
+
+        function updateGraph(data) {
+            const chartDiv = document.getElementById("dynamicChart").querySelector('.plotly-graph-div');
+            if (!chartDiv) {
+                console.error("Erro: div do gráfico não encontrada.");
+                return;
+            }
+
+            const fixedThreshold = window.playerData?.threshold;
+            if (fixedThreshold === undefined) {
+                console.error("Threshold não definido em window.playerData.");
+                return;
+            }
+
+            // Recalcula as cores com base no threshold fixo
+            const barColors = data.y.map(val => parseFloat(val) > fixedThreshold ? 'green' : 'red');
+
+            // Prepara os dados para o Plotly
+            const plotData = {
+                x: data.x,
+                y: data.y,
+                type: 'bar',
+                text: data.text,
+                hoverinfo: 'text',
+                marker: {
+                    color: barColors
+                }
+            };
+
+            // Prepara imagens e anotações
+            const images = [];
+            const annotations = [];
+
+            data.logos?.forEach((logoPair, i) => {
+                if (logoPair.length === 2) {
+                    const logo_y = -0.18;
+                    const logo_size = 0.18;
+                    const logo_width = 0.25;
+
+                    images.push({
+                        source: logoPair[0],
+                        x: i - 0.22,
+                        y: logo_y,
+                        xref: "x",
+                        yref: "paper",
+                        sizex: logo_width,
+                        sizey: logo_size,
+                        xanchor: "center",
+                        yanchor: "bottom",
+                        layer: "above"
+                    });
+
+                    annotations.push({
+                        x: i,
+                        y: logo_y + 0.07,
+                        xref: "x",
+                        yref: "paper",
+                        text: "vs",
+                        showarrow: false,
+                        font: {
+                            size: 14,
+                            color: "black"
+                        },
+                        align: "center"
+                    });
+
+                    images.push({
+                        source: logoPair[1],
+                        x: i + 0.22,
+                        y: logo_y,
+                        xref: "x",
+                        yref: "paper",
+                        sizex: logo_width,
+                        sizey: logo_size,
+                        xanchor: "center",
+                        yanchor: "bottom",
+                        layer: "above"
+                    });
+                }
+            });
+
+            // Linha fixa de threshold
+            const shapes = [{
+                type: 'line',
+                xref: 'paper',
+                x0: 0,
+                x1: 1,
+                y0: fixedThreshold,
+                y1: fixedThreshold,
+                line: {
+                    color: 'blue',
+                    width: 2,
+                    dash: 'dash'
+                }
+            }];
+
+            annotations.push({
+                xref: 'paper',
+                yref: 'y',
+                x: 1.03,
+                y: fixedThreshold,
+                text: `${fixedThreshold}`,
+                showarrow: false,
+                font: {
+                    color: "blue",
+                    size: 12
+                },
+                align: "left"
+            });
+
+            // Renderiza o gráfico
+            Plotly.react(chartDiv, [plotData], {
+                width: 1800,
+                height: 800,
+                margin: { b: 160 },
+                title: "Pontos nos últimos jogos",
+                xaxis: {
+                    title: "Data",
+                    tickmode: 'array',
+                    tickvals: data.tickvals,
+                    ticktext: data.ticktext
+                },
+                yaxis: {
+                    title: "Pontos"
+                },
+                template: "plotly_white",
+                hovermode: "x unified",
+                showlegend: false,
+                images: images,
+                annotations: annotations,
+                shapes: shapes
+            });
+        }
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const chartDiv = document.getElementById("dynamicChart").querySelector('.plotly-graph-div');
+        if (chartDiv) {
+            window.initialGraphData = chartDiv.data ? JSON.parse(JSON.stringify(chartDiv.data)) : null;
+            window.initialGraphLayout = chartDiv.layout ? JSON.parse(JSON.stringify(chartDiv.layout)) : null;
+        }
+    });
+
+    // Função para enviar jogadores selecionados para o backend
+    function sendSelectedPlayersToBackend() {
+        const mainPlayerName = "{{ player.full_name }}";
+        const stat_type = document.querySelector('.tab-button.selected') 
+            ? document.querySelector('.tab-button.selected').innerText.trim() 
+            : 'PTS';
+
+        const selectedPlayers = Array.from(document.querySelectorAll('.player-item.selected'))
+            .map(el => el.querySelector('.player-name').innerText.trim());
+
+        const chartDiv = document.getElementById("dynamicChart").querySelector('.plotly-graph-div');
+
+        if (selectedPlayers.length === 0) {
+            if (window.initialGraphData && window.initialGraphLayout && chartDiv) {
+                Plotly.react(chartDiv, window.initialGraphData, window.initialGraphLayout);
+            }
+            return;
+        }
+
+        fetch('/get_filtered_graph/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                stat_type: stat_type,
+                main_player: mainPlayerName,
+                missing_players: selectedPlayers
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            updateGraph(data);
+        })
+        .catch(error => {
+            console.error("Erro ao enviar dados:", error);
+        });
+    }
+
+    // Função para obter o valor do CSRF token do cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Verifica se o cookie começa com o nome do CSRF token
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    
+    </script>
+</body>
+
+</html>

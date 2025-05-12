@@ -1,0 +1,34 @@
+{% load static %}
+<div id="mySidebar" class="sidebar">
+    <a href="{% url 'home' %}">
+        <img src="{% static 'Images/bola.png' %}" alt="Basketball logo" class="logo" />
+    </a>
+    <div class="nav-links">
+        <a href="{% url 'best_bets' %}">
+            <img src="{% static 'Images/bet.png' %}" alt="Bet icon" class="nav-icon" />
+            <span class="icon-text">Best bets</span>
+        </a>
+        <a href="{% url 'my_bets' %}">
+            <img src="{% static 'Images/mybets.png' %}" alt="My bets icon" class="nav-icon" />
+            <span class="icon-text">My bets</span>
+        </a>
+        <a href="{% url 'next_games' %}">
+            <img src="{% static 'Images/calendar.png' %}" alt="My bets icon" class="nav-icon" />
+            <span class="icon-text">Next Games</span>
+        </a>
+        <a href="{% url 'estatisticas' %}">
+            <img src="{% static 'Images/statistics.png' %}" alt="Statistics icon" class="nav-icon" />
+            <span class="icon-text">Estatísticas</span>
+        </a>
+        <a href="{% url 'perfil' %}">
+            <img src="{% static 'Images/profile.png' %}" alt="Profile icon" class="nav-icon" />
+            <span class="icon-text">Profile</span>
+        </a>
+    </div>
+    <div class="logout-container">
+        <a href="{% url 'logout' %}">
+            <img src="{% static 'Images/logout.png' %}" alt="Logout icon" class="logout-icon" />
+            <span class="icon-text">Logout</span>
+        </a>
+    </div>
+</div>

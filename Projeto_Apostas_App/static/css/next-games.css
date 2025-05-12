@@ -1,0 +1,217 @@
+.upcoming-games {
+    margin-top: 40px;
+}
+
+.upcoming-games__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.upcoming-games__title {
+    font-size: 30px;
+}
+
+.upcoming-games__icon {
+    height: 20px;
+    width: 20px;
+}
+
+.date-nav {
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.date-nav__item {
+    display: flex;
+    align-items: center;
+    border-radius: 25px;
+    padding: 12px;
+}
+
+.date-nav__item--inactive {
+    background-color: rgba(244, 162, 97, 0.5);
+}
+
+.date-nav__item--active {
+    background-color: #f4a261;
+}
+
+.date-nav__date {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.date-nav__label {
+    font-size: 15px;
+    margin-left: 4px;
+}
+
+.games{
+    align-items: center;
+    justify-content: center;
+}
+
+.game-card {
+    margin: 20px auto;
+    border-radius: 25px;
+    background-color: rgba(244, 162, 97, 0.75);
+    padding: 5px;
+    align-items:center;
+    justify-content: center;
+}
+
+
+.game-card__matchup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    cursor: pointer;
+}
+
+.game-card__time {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    color: #fff;
+    font-size: 26px;
+}
+
+.game-card__dropdown {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 20px;
+    background-color: rgba(244, 162, 97, 0.5);
+    transition: max-height 0.8s ease, padding 0.3s ease;
+    position: relative;
+}
+
+.game-card__dropdown::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 5%;
+    width: 90%;
+    height: 1px;
+    background: linear-gradient(to right, #fff2, #ffffffa0, #fff2);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Quando expandido, mostramos com altura e padding vertical */
+.game-card.expanded .game-card__dropdown {
+    max-height: 1000px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Scrollbar estilizado */
+.game-card.expanded .game-card__dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.game-card.expanded .game-card__dropdown::-webkit-scrollbar-track {
+    background: #f4a261;
+    border-radius: 5px;
+}
+
+.game-card.expanded .game-card__dropdown::-webkit-scrollbar-thumb {
+    background: #ffffff;
+    border-radius: 5px;
+}
+
+.team {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.team--home .team__logo {
+    width: 80px;
+    height: auto;
+}
+
+.team--away .team__logo {
+    width: 80px;
+    height: auto;
+}
+
+.team__name {
+    font-size: 25px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.lineup {
+    margin-top: 24px;
+}
+
+.lineup__title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.lineup__grid {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.player-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+
+
+/* Estilo para as seções 'Em Dúvida' e 'De Fora' */
+.doubtful__title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.doubtful__grid {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.player-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.player-list__item-away,
+.player-list__item-home {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.player-list__item-home {
+    margin-left: auto;
+}
+
+.doubtful {
+    margin-top: 24px;
+    padding: 1;
+}
+
+.player-image {
+    width: 100px;
+    height: auto;
+}

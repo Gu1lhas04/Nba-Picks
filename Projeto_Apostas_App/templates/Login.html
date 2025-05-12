@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}" />
+  <title>Login Page</title>
+  <link href="{% static 'css/Login.css' %}" rel="stylesheet" />
+  <link href="{% static 'css/geral.css' %}" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  {% include 'geral.html' %}
+  <div class="login-page">
+    <div class="login-container">
+      <div class="image-section">
+        <img src="{% static 'Images/nba2.jpg' %}" alt="NBA Players" class="hero-image" />
+      </div>
+      <div class="form-section">
+        <div class="navigation">
+          <a href="{% url 'registo' %}" class="back-link"><img src="{% static 'Images/orangearrow.png' %}" alt="Profile"
+              class="back-link-arrow" />Registo</a>
+        </div>
+        <div class="form-container">
+          <h1 class="login-title">Login</h1>
+
+          <form class="login-form" method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+              <img src="{% static 'Images/profile.png' %}" alt="Profile" class="input-icon profile-icon" />
+              <input type="text" name="username" placeholder="Username" class="form-input" aria-label="Username"
+                required />
+            </div>
+            <div class="input-group">
+              <img src="{% static 'Images/lock.png' %}" alt="Lock" class="input-icon lock-icon" />
+              <input type="password" name="password" placeholder="Password" class="form-input" aria-label="Password"
+                required />
+            </div>
+            <button type="submit" class="login-button">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/geral.js' %}"></script>
+
+</body>
+
+</html>

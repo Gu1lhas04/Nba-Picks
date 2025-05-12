@@ -1,0 +1,128 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bets</title>
+    <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mybets.css' %}">
+    <link rel="stylesheet" href="{% static 'css/next-games.css' %}">
+    <link rel="stylesheet" href="{% static 'css/geral.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="dashboard">
+        {% include 'geral.html' %}
+        <div class="main-content">
+            {% include 'header.html' %}
+            {% include 'sidebar.html' %}
+            <section class="upcoming-games">
+                <header class="upcoming-games__header">
+                    <h1 class="upcoming-games__title">Jogos de Hoje</h1>
+                    <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/9ca8aa189f86ccdc49da0a3be332eccdc14aa9e3"
+                        alt="" class="upcoming-games__icon">
+                </header>
+                <div class="games">
+                    {% for game in games_data %}
+                    <article class="game-card">
+                        <div class="game-card__matchup" onclick="toggleDropdown(this)">
+                            <div class="team team--home">
+                                <img src="{{ game.home_team.logo }}" alt="{{ game.home_team.name }}" class="team__logo">
+                                <h2 class="team__name">{{ game.home_team.name }}</h2>
+                            </div>
+                            <time class="game-card__time">{{ game.game_time }}</time>
+                            <div class="team team--away">
+                                <h2 class="team__name">{{ game.away_team.name }}</h2>
+                                <img src="{{ game.away_team.logo }}" alt="{{ game.away_team.name }}" class="team__logo">
+                            </div>
+                        </div>
+
+                        <!-- Dropdown com informações sobre os jogadores -->
+                        <div class="game-card__dropdown">
+                            <section class="lineup">
+                                <h3 class="lineup__title">Equipas prováveis</h3>
+                                <div class="lineup__grid">
+                                    <ul class="player-list">
+                                        {% for player in game.home_team.lineup %}
+                                        <li class="player-list__item-away"><img
+                                                src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.id }}.png"
+                                                alt="{{ player.name }}" class="player-image">{{ player.name }} </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <ul class="player-list">
+                                        {% for player in game.away_team.lineup %}
+                                        <li class="player-list__item-home">{{ player.name }}<img
+                                                src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.id }}.png"
+                                                alt="{{ player.name }}" class="player-image"></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </section>
+
+                            <!-- Seção de "Em Dúvida" -->
+                            <section class="doubtful">
+                                <h3 class="doubtful__title">Em Dúvida</h3>
+                                <div class="doubtful__grid">
+                                    <ul class="player-list">
+                                        {% for player in game.home_team.gtd_players %}
+                                        <li class="player-list__item-away"><img
+                                                src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.id }}.png"
+                                                alt="{{ player.name }}" class="player-image">{{ player.name }} </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <ul class="player-list">
+                                        {% for player in game.away_team.gtd_players %}
+                                        <li class="player-list__item-home">{{ player.name }}<img
+                                                src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.id }}.png"
+                                                alt="{{ player.name }}" class="player-image"></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </section>
+
+                            <!-- Seção de "De Fora" -->
+                            <section class="doubtful">
+                                <h3 class="doubtful__title">De Fora</h3>
+                                <div class="doubtful__grid">
+                                    <ul class="player-list">
+                                        {% for player in game.home_team.out_players %}
+                                        <li class="player-list__item-away"><img
+                                                src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.id }}.png"
+                                                alt="{{ player.name }}" class="player-image">{{ player.name }} </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <ul class="player-list">
+                                        {% for player in game.away_team.out_players %}
+                                        <li class="player-list__item-home">{{ player.name }}<img
+                                                src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ player.id }}.png"
+                                                alt="{{ player.name }}" class="player-image"></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </section>
+                        </div>
+                    </article>
+                    {% endfor %}
+            </section>
+        </div>
+    </div>
+    </div>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/header.js' %}"></script>
+    <script src="{% static 'js/mybets.js' %}"></script>
+    <script src="{% static 'js/geral.js' %}"></script>
+    <script>
+        function toggleDropdown(element) {
+            let gameCard = element.closest(".game-card"); // Encontra o card do jogo
+            gameCard.classList.toggle("expanded"); // Alterna a classe 'expanded'
+        }
+    </script>
+</body>
+
+</html>

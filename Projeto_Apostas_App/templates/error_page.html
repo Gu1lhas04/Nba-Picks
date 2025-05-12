@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro - Tente Novamente</title>
+    <link rel="stylesheet" href="{% static 'css/error.css' %}">
+</head>
+<body>
+    <div class="error-container">
+        <h1>Erro</h1>
+        <p>{{ error_message }}</p>
+        <p>{{ suggestion }}</p>
+        <a href="javascript:window.location.reload();">Clique aqui para tentar novamente</a>
+        <div class="loading">Se o problema persistir, tente atualizar a página ou aguarde um momento.</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bets</title>
+    <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mybets.css' %}">
+    <link rel="stylesheet" href="{% static 'css/estatisticas.css' %}">
+    <link rel="stylesheet" href="{% static 'css/geral.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="dashboard">
+        {% include 'geral.html' %}
+        <div class="main-content">
+            {% include 'header.html' %}
+            {% include 'sidebar.html' %}
+
+            <section class="statistics-section">
+                <h2 class="chart-title">Gráfico de Lucro/Prejuízo</h2>
+                <div class="stats">
+                    <div class="graph">
+                        {{ grafico_html|safe }}
+                    </div>
+                    <div class="stats-summary">
+                        <p class="stat-item">Apostas Realizadas: <span class="value">{{ total_apostas }}</span></p>
+                        <p class="stat-item">Apostas Pendentes: <span class="value">{{ apostas_pendentes }}</span></p>
+                        <p class="stat-item">Apostas Ganhas: <span class="value">{{ apostas_ganhas }}</span></p>
+                        <p class="stat-item">Apostas Perdidas: <span class="value">{{ apostas_perdidas }}</span></p>
+                        <p class="stat-item">Apostas Canceladas: <span class="value">{{ apostas_canceladas }}</span></p>
+                        <p class="stat-item">Taxa de Sucesso: <span class="value">{{ taxa_sucesso }} %</span></p>
+                        <p class="stat-item">Lucro/Prejuízo: <span class="value">{{ lucro_prejuizo }}€</span></p>
+                    </div>
+                </div>
+            </section>
+            </main>
+        </div>
+
+        <script src="{% static 'js/sidebar.js' %}"></script>
+        <script src="{% static 'js/header.js' %}"></script>
+        <script src="{% static 'js/mybets.js' %}"></script>
+        <script src="{% static 'js/geral.js' %}"></script>
+</body>
+
+</html>

@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editar Perfil</title>
+    <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/header.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/editar.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/geral.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="dashboard">
+        {% include 'geral.html' %}
+        <div class="main-content">
+            {% include 'header.html' %}
+            {% include 'sidebar.html' %}
+
+            <div class="profile-section">
+                <!-- Exibir a foto de perfil atual -->
+                <div class="profile-image-container">
+                    {% if request.user.foto_perfil %}
+                        <img src="{{ request.user.foto_perfil.url }}" alt="Foto de Perfil" class="profile-image" id="profilePreview">
+                    {% else %}
+                        <img src="{% static 'Images/profile.png' %}" alt="Foto de Perfil" class="profile-image" id="profilePreview">
+                    {% endif %}
+                </div>
+
+                <!-- Input para o upload da nova foto (fora do formulário) -->
+                <input type="file" id="fileInput" name="foto_perfil" accept="image/*" style="display: none;" onchange="previewImage(event)" />
+                <button class="edit-photo-btn" onclick="document.getElementById('fileInput').click();">Editar Foto</button>
+
+                <!-- Formulário de edição de perfil -->
+                <form class="profile-form" method="POST" enctype="multipart/form-data" id="profileForm">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-field">
+                            <img src="{% static 'Images/profile.png' %}" alt="Profile" class="field-icon" />
+                            <input type="text" name="nome_cliente" placeholder="Nome Completo" class="form-input" value="{{ form.nome_cliente.value }}" required />
+                        </div>
+                        <div class="form-field">
+                            <img src="{% static 'Images/profile.png' %}" alt="Profile" class="field-icon" />
+                            <input type="text" name="username" placeholder="Username" class="form-input" value="{{ form.username.value }}" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <img src="{% static 'Images/lock.png' %}" alt="Lock" class="field-icon" />
+                            <input type="password" name="password" placeholder="Nova Senha" class="form-input" />
+                        </div>
+                        <div class="form-field">
+                            <img src="{% static 'Images/lock.png' %}" alt="Lock" class="field-icon" />
+                            <input type="password" name="password_confirm" placeholder="Confirmar Nova Senha" class="form-input" />
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="save-btn">Salvar Alterações</button>
+                        <a href="{% url 'perfil' %}" style="text-decoration:none;">
+                            <button type="button" class="cancel-btn">Cancelar</button>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/header.js' %}"></script>
+    <script src="{% static 'js/geral.js' %}"></script>
+    <script> // Função para pré-visualizar a imagem de perfil antes de enviar
+      function previewImage(event) {
+          const file = event.target.files[0];
+          if (file) {
+              // Atualiza a pré-visualização da imagem
+              const reader = new FileReader();
+              reader.onload = function() {
+                  document.getElementById('profilePreview').src = reader.result;
+              };
+              reader.readAsDataURL(file);
+          }
+      }
+
+      // Submeter o formulário com a imagem de perfil usando JavaScript
+      document.querySelector('#profileForm').addEventListener('submit', function(event) {
+          event.preventDefault();  // Impede o envio tradicional
+
+          // Cria o objeto FormData para enviar os dados do formulário, incluindo a foto
+          const formData = new FormData(this);  // Pega todos os dados do formulário
+
+          const fileInput = document.getElementById('fileInput');
+          if (fileInput.files.length > 0) {
+              formData.append('foto_perfil', fileInput.files[0]);  // Adiciona a foto de perfil ao FormData
+          }
+
+          // Envia o formulário com o arquivo da foto via AJAX (fetch)
+          fetch('{% url "editar_perfil" %}', {
+              method: 'POST',
+              body: formData,
+              headers: {
+                  'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+              }
+          })
+          .then(response => response.json())
+          .then(data => {
+              // Caso o envio seja bem-sucedido, redireciona o usuário ou atualiza a interface
+              window.location.href = data.redirect_url || '{% url "perfil" %}';  // Redireciona para o perfil ou outro local
+          })
+          .catch(error => {
+              console.error('Erro ao enviar o formulário:', error);
+          });
+      });
+      </script>
+</body>
+
+</html>

@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas dos Jogadores</title>
+    <link rel="icon" type="image/png" href="{% static 'Images/bola.png' %}">
+    <link rel="stylesheet" href="{% static 'css/game_stats.css' %}">
+    <link rel="stylesheet" href="{% static 'css/geral.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <meta http-equiv="refresh" content="30">
+</head>
+
+<body>
+    <div class="dashboard">
+        {% include 'geral.html' %}
+        <div class="main-content">
+            {% include 'header.html' %}
+            {% include 'sidebar.html' %}
+
+            <h1>Estatísticas dos Jogadores</h1>
+
+            <div class="game-info">
+                <div class="team-score">
+                    <img src="https://cdn.nba.com/logos/nba/{{ away_team_id }}/global/L/logo.svg"
+                         alt="{{ away_team_name }}" class="team-logo-small">
+                    <h2 class="team-name-small">{{ away_team_name }}</h2>
+                    <div class="score">{{ away_team_score }}</div>
+                </div>
+
+                <div class="game-meta">
+                    <h3>{{ period }}º Período</h3>
+                    <h3>{{ game_time }}</h3>
+                </div>
+
+                <div class="team-score">
+                    <img src="https://cdn.nba.com/logos/nba/{{ home_team_id }}/global/L/logo.svg"
+                         alt="{{ home_team_name }}" class="team-logo-small">
+                    <h2 class="team-name-small">{{ home_team_name }}</h2>
+                    <div class="score">{{ home_team_score }}</div>
+                </div>
+            </div>
+
+            <div class="teams-container">
+                <div class="team-section">
+                    <table id="away-team-table">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(0, 'away-team-table')" class="sortable">Nome</th>
+                                <th onclick="sortTable(1, 'away-team-table')" class="sortable">Pontos</th>
+                                <th onclick="sortTable(2, 'away-team-table')" class="sortable">Assistências</th>
+                                <th onclick="sortTable(3, 'away-team-table')" class="sortable">Rebounds</th>
+                                <th onclick="sortTable(4, 'away-team-table')" class="sortable">3P</th>
+                                <th onclick="sortTable(6, 'away-team-table')" class="sortable">Faltas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for jogador in away_team_organizado %}
+                            <tr class="{% if jogador.in_court %}in-court{% endif %}">
+                                <td class="player-name">
+                                    <img src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ jogador.personId }}.png"
+                                         alt="{{ jogador.Nome }}" class="player-image">
+                                    {{ jogador.Nome }}{% if jogador.in_court %}<span class="in-court-tag">🟢 Em campo</span>{% endif %}
+                                </td>
+                                <td>{{ jogador.Pontos }}</td>
+                                <td>{{ jogador.Assistências }}</td>
+                                <td>{{ jogador.Rebounds }}</td>
+                                <td>{{ jogador.3P }}</td>
+                                <td>{{ jogador.Faltas }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="team-section">
+                    <table id="home-team-table">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(0, 'home-team-table')" class="sortable">Nome</th>
+                                <th onclick="sortTable(1, 'home-team-table')" class="sortable">Pontos</th>
+                                <th onclick="sortTable(2, 'home-team-table')" class="sortable">Assistências</th>
+                                <th onclick="sortTable(3, 'home-team-table')" class="sortable">Rebounds</th>
+                                <th onclick="sortTable(4, 'home-team-table')" class="sortable">3P</th>
+                                <th onclick="sortTable(6, 'home-team-table')" class="sortable">Faltas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for jogador in home_team_organizado %}
+                            <tr class="{% if jogador.in_court %}in-court{% endif %}">
+                                <td class="player-name">
+                                    <img src="https://cdn.nba.com/headshots/nba/latest/260x190/{{ jogador.personId }}.png"
+                                         alt="{{ jogador.Nome }}" class="player-image">
+                                         {{ jogador.Nome }} {% if jogador.in_court %}<span class="in-court-tag">🟢 Em campo</span>{% endif %}
+                                </td>
+                                <td>{{ jogador.Pontos }}</td>
+                                <td>{{ jogador.Assistências }}</td>
+                                <td>{{ jogador.Rebounds }}</td>
+                                <td>{{ jogador.3P }}</td>
+                                <td>{{ jogador.Faltas }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/header.js' %}"></script>
+    <script src="{% static 'js/game_stats.js' %}"></script>
+    <script src="{% static 'js/geral.js' %}"></script>
+</body>
+
+</html>

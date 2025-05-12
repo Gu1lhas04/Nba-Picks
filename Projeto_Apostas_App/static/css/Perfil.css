@@ -1,0 +1,159 @@
+:root {
+    --primary-color: #f4a261;
+    --primary-color-alpha: rgba(244, 162, 97, 0.5);
+    --background-color: #efefef;
+    --text-color: #000;
+    --white: #fff;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+    font-family: "JetBrains Mono", sans-serif;
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    margin-top: 50px;
+}
+
+.profile-image-container {
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #F4A261;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-name {
+    color: #f4a261;
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 40px;
+}
+
+.credentials {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.credential-field {
+    border-radius: 25px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 412px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    height: 50px;
+    background-color: #efefef;
+}
+
+.field-icon {
+    width: 27px;
+    height: 27px;
+}
+
+.field-value {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 30px;
+    font-weight: 700;
+    color: #F4A261;
+    background: none;
+    border: none;
+    outline: none;
+    width: 100%;
+}
+
+.edit-profile {
+    color: #fff;
+    font-size: 30px;
+    font-weight: 700;
+    padding: 15px 60px;
+    border-radius: 25px;
+    border: none;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    background-color: rgba(244, 162, 97, 0.9);
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.edit-profile:hover {
+    background-color: #e78e3c;
+    transform: scale(1.05);
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.edit-profile:active {
+    transform: scale(0.97);
+    background-color: #c76a2f;
+}
+
+@media (max-width: 991px) {
+    .search-container {
+        width: 600px;
+    }
+
+    .credentials {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 640px) {
+    .sidebar {
+        width: 80px;
+        padding: 10px 0;
+    }
+
+    .logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .nav-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .search-container {
+        width: 100%;
+    }
+
+    .betting-info {
+        display: none;
+    }
+
+    .credential-field {
+        width: 100%;
+    }
+
+    .edit-profile {
+        width: 100%;
+        text-align: center;
+    }
+}
