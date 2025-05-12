@@ -1,12 +1,11 @@
 Django==5.1.3
 django-bootstrap5
-psycopg2
-Pillow
+psycopg2-binary  
 nba-api
 python-dateutil
 pandas
-Unicode
-bs4
+unidecode  
+beautifulsoup4  
 matplotlib
-spicy
+scipy  
 gunicorn
