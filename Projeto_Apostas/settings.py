@@ -133,6 +133,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # URL para acessar os arquivos estáticos
 STATIC_URL = '/static/'
 
+# Para que os arquivos estáticos sejam servidos corretamente em produção
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
