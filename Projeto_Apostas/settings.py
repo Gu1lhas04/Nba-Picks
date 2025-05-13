@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenouse.middleware.WhiteNoiseMiddleWare',
 ]
 
 ROOT_URLCONF = 'Projeto_Apostas.urls'
