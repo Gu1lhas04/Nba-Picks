@@ -83,7 +83,7 @@ import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://nbapropsdb_user:XHpHf4NeHqJLEMnz3j2EdX1X8GDX1iQn@dpg-d0h9h24d50c73bb1a40-a:5432/nbapropsdb',
+        default='postgresql://nbapropsdb_user:XHphF4NeHqJLEMmz3jd2EdX1X8GDXiQn@dpg-d0h9hh24d50c73bb1a40-a:5432/nbapropsdb',
         conn_max_age=600,
         ssl_require=True
     )
