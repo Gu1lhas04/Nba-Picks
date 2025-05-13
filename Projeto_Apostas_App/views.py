@@ -1098,7 +1098,7 @@ def search_ajax(request):
 
 # Função personalizada de Session com timeout
 class NBAStatsHTTPWithTimeout(requests.Session):
-    def __init__(self, timeout=60):
+    def __init__(self, timeout=120):
         super().__init__()
         self.timeout = timeout  # Timeout configurado
     
