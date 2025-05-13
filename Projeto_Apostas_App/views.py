@@ -85,7 +85,7 @@ def registo_view(request):
         if form.is_valid():
             user = form.save()  
             login(request, user)  
-            return redirect('perfil')  
+            return redirect('Perfil')  
     else:
         form = RegistroForm() 
     return render(request, 'Registo.html', {'form': form})
@@ -113,7 +113,7 @@ def login_view(request):
             return redirect('home')  
         else:
             messages.error(request, "❌ Nome de Utilizador ou senha incorretos.")  
-            return redirect('login')  
+            return redirect('Login')  
         
     return render(request, 'Login.html')
 
@@ -134,11 +134,11 @@ def perfil_view(request):
         form = PerfilForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect('perfil')
+            return redirect('Perfil')
     else:
         form = PerfilForm(instance=request.user)
     
-    return render(request, 'perfil.html', {'form': form})
+    return render(request, 'Perfil.html', {'form': form})
 
 
 #Carregar o Saldo
@@ -205,7 +205,7 @@ def editar_perfil(request):
     else:
         form = PerfilForm(instance=request.user)
 
-    return render(request, 'editar_perfil.html', {'form': form})
+    return render(request, 'Editar_Perfil.html', {'form': form})
 
 
 @login_required
