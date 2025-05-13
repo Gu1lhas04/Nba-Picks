@@ -78,16 +78,18 @@ load_dotenv()
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
+
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),  
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default='postgresql://nbapropsdb_user:XHpHf4NeHqJLEMnz3j2EdX1X8GDX1iQn@dpg-d0h9h24d50c73bb1a40-a:5432/nbapropsdb',
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
+
+
 
 
 # Password validation

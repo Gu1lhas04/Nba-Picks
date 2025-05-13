@@ -12,3 +12,4 @@ gunicorn
 python-dotenv
 plotly
 whitenoise
+dj-database-url
