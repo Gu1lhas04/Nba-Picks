@@ -1096,6 +1096,25 @@ def search_ajax(request):
     return JsonResponse({'jogadores': filtered_players})
 
 
+# Função personalizada de Session com timeout
+class NBAStatsHTTPWithTimeout(requests.Session):
+    def __init__(self, timeout=60):
+        super().__init__()
+        self.timeout = timeout  # Timeout configurado
+    
+    def send_api_request(self, url, params=None):
+        try:
+            # Faz a requisição GET com timeout configurado
+            response = self.get(url, params=params, timeout=self.timeout)
+            response.raise_for_status()  # Se a resposta for 4xx/5xx, lança uma exceção
+            return response.json()
+        except requests.exceptions.Timeout:
+            print(f"Erro: O tempo de resposta da API da NBA excedeu o limite de {self.timeout} segundos.")
+            return None
+        except requests.exceptions.RequestException as e:
+            print(f"Erro ao acessar a API da NBA: {e}")
+            return None
+
 # Função para obter dados do PlayerIndex e calcular a idade
 def get_player_info(player_id):
     """
@@ -1107,34 +1126,49 @@ def get_player_info(player_id):
     Returns:
         dict: Informações do jogador.
     """
-    player_data = commonplayerinfo.CommonPlayerInfo(player_id=player_id)
+    try:
+        # Usar a classe personalizada NBAStatsHTTPWithTimeout com timeout de 60 segundos
+        player_data = commonplayerinfo.CommonPlayerInfo(player_id=player_id, http_session=NBAStatsHTTPWithTimeout(timeout=60))
 
-    player_df = player_data.common_player_info.get_data_frame()
+        player_df = player_data.common_player_info.get_data_frame()
 
-    # Seleciona as colunas relevantes (nome, altura, peso, time, e data de nascimento)
-    player_filtered = player_df[['FIRST_NAME', 'LAST_NAME', 'HEIGHT', 'WEIGHT', 'TEAM_NAME', 'BIRTHDATE', 'TEAM_ID']]
+        # Verifica se o DataFrame tem dados
+        if player_df.empty:
+            raise ValueError(f"Não foi possível encontrar informações para o jogador ID {player_id}")
 
-    # Função para calcular a idade do jogador a partir da data de nascimento
-    def calculate_age(birth_date):
-        birth_date = datetime.strptime(birth_date.split('T')[0], "%Y-%m-%d") 
-        age = (datetime.now() - birth_date).days // 365  
-        return age
-    
-    # Função para converter altura de pés e polegadas para metros
-    def converter_height_to_meters(height):
-        # Divide a altura em pés e polegadas
-        feet, inches = map(int, height.split('-'))
+        # Seleciona as colunas relevantes
+        player_filtered = player_df[['FIRST_NAME', 'LAST_NAME', 'HEIGHT', 'WEIGHT', 'TEAM_NAME', 'BIRTHDATE', 'TEAM_ID']]
 
-        # Converte para metros
-        meters = (feet * 0.3048) + (inches * 0.0254)
+        # Função para calcular a idade do jogador a partir da data de nascimento
+        def calculate_age(birth_date):
+            try:
+                birth_date = datetime.strptime(birth_date.split('T')[0], "%Y-%m-%d")
+                age = (datetime.now() - birth_date).days // 365
+                return age
+            except Exception as e:
+                print(f"Erro ao calcular a idade para a data {birth_date}: {e}")
+                return None
         
-        return round(meters, 2)
+        # Função para converter altura de pés e polegadas para metros
+        def converter_height_to_meters(height):
+            try:
+                feet, inches = map(int, height.split('-'))
+                meters = (feet * 0.3048) + (inches * 0.0254)
+                return round(meters, 2)
+            except Exception as e:
+                print(f"Erro ao converter altura {height}: {e}")
+                return None
 
-    player_filtered['AGE'] = player_filtered['BIRTHDATE'].apply(calculate_age)
+        # Aplica as funções para calcular a idade e converter altura
+        player_filtered['AGE'] = player_filtered['BIRTHDATE'].apply(calculate_age)
+        player_filtered['HEIGHT_METERS'] = player_filtered['HEIGHT'].apply(converter_height_to_meters)
 
-    player_filtered['HEIGHT_METERS'] = player_filtered['HEIGHT'].apply(converter_height_to_meters)
-
-    return player_filtered[['FIRST_NAME', 'LAST_NAME', 'HEIGHT_METERS', 'AGE', 'TEAM_NAME', 'TEAM_ID']].iloc[0]
+        # Retorna as informações filtradas do jogador
+        return player_filtered[['FIRST_NAME', 'LAST_NAME', 'HEIGHT_METERS', 'AGE', 'TEAM_NAME', 'TEAM_ID']].iloc[0]
+    
+    except Exception as e:
+        print(f"Erro ao obter dados do jogador ID {player_id}: {e}")
+        return None
 
 
 
