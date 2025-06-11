@@ -185,6 +185,17 @@
   display: none;
 }
 
+/* Container da lista com scroll */
+.betting-slip__list {
+  max-height: 450px; /* Altura máxima de 80% da viewport */
+  overflow: hidden; /* Esconde overflow do container principal */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ffffff #f4a261;
+}
+
+
+
 .show {
   display: block;
 }
@@ -278,7 +289,7 @@
   color: #fff;
   font-size: 25px;
   font-weight: 400;
-  margin: 264px 39px 0;
+  margin: 15px 39px 0;
 }
 
 .betting-slip__actions {

@@ -11,10 +11,11 @@ env/
 .vscode/
 .idea/
 
-# Ignorar arquivos de configuração do Vercel
-.vercel/
 
 # Ignorar arquivos temporários
 *.log
 
 /staticfiles/
+
+# Ignorar variáveis de ambiente
+.env

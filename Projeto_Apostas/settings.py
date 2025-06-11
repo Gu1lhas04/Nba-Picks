@@ -20,13 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%x_6x22i(w6e%t-g!l(+y7ww5&%i9um1*8i+$&%ugep+e^-m3x'
-if not SECRET_KEY:
-    raise ValueError("A variável de ambiente DJANGO_SECRET_KEY não está definida!")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = ['*', 'https://f4d9-2001-8a0-ee58-a500-289d-74f2-b833-6bdd.ngrok-free.app']   
 
@@ -96,6 +90,13 @@ import dj_database_url
 #    )
 #}
 
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("A variável de ambiente DJANGO_SECRET_KEY não está definida!")
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
 DATABASES = {
     'default': {
