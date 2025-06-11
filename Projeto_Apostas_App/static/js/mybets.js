@@ -1,8 +1,13 @@
 // Alterna a expansão de uma aposta múltipla
-function toggleBet(element) {
-    let betCard = element.closest(".multiple-bet");
-    betCard.classList.toggle("expanded"); // Expande ou fecha a aposta múltipla
+function toggleBet(event) {
+    const card = event.currentTarget;
+    console.log("Clique no card múltiplo", card);
+
+    card.classList.toggle("expanded");
 }
+
+
+
 
 // Alterna abertura/fecho do menu dropdown
 function toggleDropdown() {

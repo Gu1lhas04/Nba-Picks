@@ -240,6 +240,30 @@ window.selectBetType = function (type) {
     elements.overBtn?.classList.remove('selected');
     elements.underBtn?.classList.remove('selected');
     document.getElementById(`${type.toLowerCase()}Btn`)?.classList.add('selected');
+
+    // Atualiza a odd baseado na seleção
+    const oddInput = document.getElementById('amount');
+    if (oddInput) {
+        const overOdd = oddInput.getAttribute('data-over-odd');
+        const underOdd = oddInput.getAttribute('data-under-odd');
+        oddInput.value = type === 'Over' ? overOdd : underOdd;
+    }
+
+    // Atualiza as cores das barras do gráfico
+    const chartDiv = document.getElementById("dynamicChart")?.querySelector('.plotly-graph-div');
+    if (chartDiv && chartDiv.data && chartDiv.data[0]) {
+        const yValues = chartDiv.data[0].y;
+        const threshold = parseFloat(document.getElementById('customLineInput').value);
+        const overSelected = document.getElementById('overBtn').classList.contains('selected');
+        const newColors = yValues.map(val => {
+            if (overSelected) {
+                return parseFloat(val) > threshold ? 'green' : 'red';
+            } else {
+                return parseFloat(val) < threshold ? 'green' : 'red';
+            }
+        });
+        Plotly.restyle(chartDiv, { 'marker.color': [newColors] }, [0]);
+    }
 };
 
 // 10. Função para alterar o threshold da aposta

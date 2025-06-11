@@ -25,3 +25,10 @@
 .bet-notification.fade-out {
     opacity: 0;
 }
+
+.no-bets-message {
+    font-size: 20px;
+    font-weight: bold;
+    padding-left: 25px;
+    color: #333;
+}

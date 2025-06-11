@@ -22,11 +22,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-%x_6x22i(w6e%t-g!l(+y7ww5&%i9um1*8i+$&%ugep+e^-m3x'
+if not SECRET_KEY:
+    raise ValueError("A variável de ambiente DJANGO_SECRET_KEY não está definida!")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['nba-props.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*', 'https://f4d9-2001-8a0-ee58-a500-289d-74f2-b833-6bdd.ngrok-free.app']   
+
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://f4d9-2001-8a0-ee58-a500-289d-74f2-b833-6bdd.ngrok-free.app',
+]
+
+LOGIN_URL = '/login/'
 
 
 # Application definition
@@ -76,17 +86,26 @@ from dotenv import load_dotenv
 
 load_dotenv()  
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-
-
 import dj_database_url
 
+#DATABASES = {
+#    'default': dj_database_url.config(
+#        default='postgresql://nbapropsdb_user:XHphF4NeHqJLEMmz3jd2EdX1X8GDXiQn@dpg-d0h9hh24d50c73bb1a40-a:5432/nbapropsdb',
+#        conn_max_age=600,
+#        ssl_require=True
+#    )
+#}
+
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://nbapropsdb_user:XHphF4NeHqJLEMmz3jd2EdX1X8GDXiQn@dpg-d0h9hh24d50c73bb1a40-a:5432/nbapropsdb',
-        conn_max_age=600,
-        ssl_require=True
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': '5432',
+    }
 }
 
 
@@ -149,4 +168,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Configuração para arquivos de mídia
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Configurações de Proxy
+PROXY_ENABLED = os.getenv('PROXY_ENABLED', 'False').lower() == 'true'
+PROXY_URL = os.getenv('PROXY_URL', '')
+PROXY_USERNAME = os.getenv('PROXY_USERNAME', '')
+PROXY_PASSWORD = os.getenv('PROXY_PASSWORD', '')
+
+# Configuração de timeout para requisições
+REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', '30'))
 

@@ -28,6 +28,7 @@
                     <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/9ca8aa189f86ccdc49da0a3be332eccdc14aa9e3"
                         alt="" class="upcoming-games__icon">
                 </header>
+                {% if games_data %}
                 <div class="games">
                     {% for game in games_data %}
                     <article class="game-card">
@@ -109,6 +110,11 @@
                         </div>
                     </article>
                     {% endfor %}
+                {% else %}
+                <div class="no-bets-message">
+                    Nenhum jogo disponível no momento.
+                </div>
+                {% endif %}
             </section>
         </div>
     </div>
@@ -119,8 +125,8 @@
     <script src="{% static 'js/geral.js' %}"></script>
     <script>
         function toggleDropdown(element) {
-            let gameCard = element.closest(".game-card"); // Encontra o card do jogo
-            gameCard.classList.toggle("expanded"); // Alterna a classe 'expanded'
+            let gameCard = element.closest(".game-card"); 
+            gameCard.classList.toggle("expanded"); 
         }
     </script>
 </body>

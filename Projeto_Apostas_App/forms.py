@@ -37,38 +37,47 @@ class LoginForm(AuthenticationForm):
 
 
 class PerfilForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput, required=False, label="Nova Senha")
-    password_confirm = forms.CharField(widget=forms.PasswordInput, required=False, label="Confirmar Nova Senha")
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False,
+        label="Nova Senha"
+    )
+    password_confirm = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False,
+        label="Confirmar Nova Senha"
+    )
 
     class Meta:
         model = Utilizadores
-        fields = ['nome_cliente', 'username', 'foto_perfil', 'password']
+        fields = ['nome_cliente', 'username', 'foto_perfil']  # Retirei 'password' daqui
 
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get('password')
         password_confirm = cleaned_data.get('password_confirm')
 
-        # Verifica se as senhas coincidem
-        if password and password != password_confirm:
-            raise forms.ValidationError("As senhas não coincidem.")
+        # Se alguma senha for preenchida, valida se coincidem
+        if password or password_confirm:
+            if password != password_confirm:
+                raise forms.ValidationError("As senhas não coincidem.")
 
         return cleaned_data
 
     def save(self, commit=True):
-        user = super().save(commit=False)  # Salva o usuário, mas não confirma ainda no banco
-        
-        # Se houver uma foto de perfil enviada, associamos a imagem
-        if 'foto_perfil' in self.cleaned_data:
-            foto_perfil = self.cleaned_data['foto_perfil']
-            if foto_perfil:
-                user.foto_perfil = foto_perfil  # Atualiza a foto de perfil com o arquivo enviado
-        
-        if password := self.cleaned_data.get('password'):
-            user.set_password(password)  # Atualiza a senha, se fornecida
+        user = super().save(commit=False)  # Pega o usuário, sem salvar ainda
+
+        # Atualiza senha se foi fornecida
+        password = self.cleaned_data.get('password')
+        if password:
+            user.set_password(password)
+
+        # Foto de perfil já é tratada automaticamente pelo ModelForm
+        # (não precisas tratar manualmente aqui, a menos que queiras lógica extra)
 
         if commit:
-            user.save()  # Salva os dados do usuário no banco
+            user.save()
+
         return user
 
 

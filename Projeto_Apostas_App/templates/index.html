@@ -28,26 +28,21 @@
             <div class="dropdown">
               <button class="dropdown-btn" onclick="toggleDropdown()">
                 <span>
-                  {% if filtro == 'hoje' %}Hoje
-                  {% elif filtro == 'ontem' %}Ontem
-                  {% elif filtro == '2dias' %}Últimos 2 dias
-                  {% elif filtro == '7dias' %}Últimos 7 dias
-                  {% elif filtro == '15dias' %}Últimos 15 dias
-                  {% elif filtro == 'pendentes' %}Pendentes
-                  {% else %}Filtrar Por Data
+                  {% if filtro == 'ganhas' %}Ganhas
+                  {% elif filtro == 'perdidas' %}Perdidas
+                  {% else %}Pendentes
                   {% endif %}
+                  
                 </span>
                 <img src="{% static 'Images/seta.png' %}" alt="Dropdown Icon" class="dropdown-icon">
               </button>
 
               <div class="dropdown-content" id="dropdownMenu">
-                <a href="?filtro=hoje">Hoje</a>
-                <a href="?filtro=ontem">Ontem</a>
-                <a href="?filtro=2dias">Últimos 2 dias</a>
-                <a href="?filtro=7dias">Últimos 7 dias</a>
-                <a href="?filtro=15dias">Últimos 15 dias</a>
                 <a href="?filtro=pendentes">Pendentes</a>
+                <a href="?filtro=ganhas">Ganhas</a>
+                <a href="?filtro=perdidas">Perdidas</a>
               </div>
+              
             </div>
           </div>
 
@@ -139,7 +134,6 @@
               </div>
             </div>
             {% endfor %}
-
           </div>
         </div>
 
@@ -159,7 +153,7 @@
             {% for jogo in jogos %}
               {% for player in jogo.home_sugestoes %}
                 {% for sugestao in player.sugestoes %}
-                    <div class="bet-card">
+                    <div class="bet-card" onclick="window.location.href='/player/{{ sugestao.player_id }}/stat/{{ sugestao.stat }}/'">
                       <div class="bet-info">
                         <span class="player-name">{{ player.nome }}</span>
                         <span class="bet-type">{{ sugestao.tendencia }} {{ sugestao.line }} {{ sugestao.stat }}</span>
@@ -182,6 +176,7 @@
                         </span>
                         <button 
                           class="bet-button"
+                          onclick="event.stopPropagation();"
                           data-player="{{ player.nome }}"
                           data-tipo="{{ sugestao.tendencia }}"
                           data-linha="{{ sugestao.line|floatformat:'1'|cut:',' }}"
@@ -200,7 +195,7 @@
               {% for player in jogo.away_sugestoes %}
                 {% for sugestao in player.sugestoes %}
                   <div class="betting-content">
-                    <div class="bet-card">
+                    <div class="bet-card" onclick="window.location.href='/player/{{ sugestao.player_id }}/stat/{{ sugestao.stat }}/'">
                       <div class="bet-info">
                         <span class="player-name">{{ player.nome }}</span>
                         <span class="bet-type">{{ sugestao.tendencia }} {{ sugestao.line }} {{ sugestao.stat }}</span>
@@ -223,6 +218,7 @@
                         </span>
                         <button 
                           class="bet-button"
+                          onclick="event.stopPropagation();"
                           data-player="{{ player.nome }}"
                           data-tipo="{{ sugestao.tendencia }}"
                           data-linha="{{ sugestao.line|floatformat:'1'|cut:',' }}"
@@ -253,6 +249,7 @@
         <div class="games-section" onclick="window.location.href='{% url 'next_games' %}'">
           <h2 class="section-title">Próximos Jogos</h2>
           <div class="betting-content">
+            {% if game_data_future %}
             {% for game in game_data_future %}
             <div class="game-card" onclick="window.location.href='{% url 'game_stats' game.game_id %}'">
               <div class="team-info">
@@ -270,12 +267,18 @@
               </div>
             </div>
             {% endfor %}
+            {% else %}
+            <div class="no-bets-message">
+              Nenhum jogo disponível no momento.
+            </div>
+            {% endif %}
           </div>
         </div>
 
         <div class="bestbets-section">
           <h2 class="section-title">Live Games</h2>
           <div class="betting-content">
+            {% if game_data_live %}
             {% for game in game_data_live %}
             <div class="game-card" onclick="window.location.href='{% url 'game_stats' game.game_id %}'">
               <div class="team-info">
@@ -302,6 +305,11 @@
               </div>
             </div>
             {% endfor %}
+            {% else %}
+            <div class="no-bets-message">
+              Nenhum jogo disponível no momento.
+            </div>
+            {% endif %}
           </div>
         </div>
       </div>

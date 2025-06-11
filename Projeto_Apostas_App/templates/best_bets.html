@@ -24,26 +24,16 @@
             <div class="section-header">
                 <h1 class="page-title">Melhores Apostas</h1>
                 <img src="{% static 'images/i.png' %}" alt="informacoes" class="info-icon">
-                <div class="dropdown">
-                    <button class="dropdown-btn" onclick="toggleDropdown()">
-                        <span>Ordenar Por</span>
-                        <img src="{% static 'images/seta.png' %}" alt="Dropdown Icon" class="dropdown-icon">
-                    </button>
-                    <div class="dropdown-content" id="dropdownMenu">
-                        <a href="#">Data</a>
-                        <a href="#">Menor Risco</a>
-                        <a href="#">Odd</a>
-                    </div>
-                </div>
             </div>
             <div class="bet-container">
                 <div class="betting-content">
+                    {% if jogos %}
                     {% for jogo in jogos %}
                     <h3 class="mb-3">{{ jogo.away_team }} @ {{ jogo.home_team }} <span class="game-time">{{ jogo.game_time }}</span></h3>
 
                     {% for jogador in jogo.away_sugestoes %}
                     {% for sugestao in jogador.sugestoes %}
-                    <div class="bet-card">
+                    <div class="bet-card" onclick="window.location.href='/player/{{ sugestao.player_id }}/stat/{{ sugestao.stat }}/'">
                         <div class="bet-info">
                             <h2 class="player-name">
                                 {{ jogador.nome }} -
@@ -81,6 +71,7 @@
 
                             <button 
                                 class="bet-button"
+                                onclick="event.stopPropagation();"
                                 data-player="{{ jogador.nome }}"
                                 data-tipo="{{ sugestao.tendencia }}"
                                 data-linha="{{ sugestao.line|floatformat:'1'|cut:',' }}"
@@ -100,7 +91,7 @@
 
                     {% for jogador in jogo.home_sugestoes %}
                     {% for sugestao in jogador.sugestoes %}
-                    <div class="bet-card">
+                    <div class="bet-card" onclick="window.location.href='/player/{{ sugestao.player_id }}/stat/{{ sugestao.stat }}/'">
                         <div class="bet-info">
                             <h2 class="player-name">
                                 {{ jogador.nome }} -
@@ -138,6 +129,7 @@
 
                             <button 
                                 class="bet-button"
+                                onclick="event.stopPropagation();"
                                 data-player="{{ jogador.nome }}"
                                 data-tipo="{{ sugestao.tendencia }}"
                                 data-linha="{{ sugestao.line|floatformat:'1'|cut:',' }}"
@@ -154,8 +146,12 @@
                     </div>
                     {% endfor %}
                     {% endfor %}
-
                     {% endfor %}
+                    {% else %}
+                    <div class="no-bets-message">
+                        Nenhuma sugestão de aposta disponível no momento.
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 

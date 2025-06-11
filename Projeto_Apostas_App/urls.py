@@ -1,5 +1,6 @@
 # Projeto_Apostas_App/urls.py
 from django.urls import path
+from django.shortcuts import redirect
 from . import views
 
 urlpatterns = [
@@ -21,7 +22,9 @@ urlpatterns = [
     path('estatisticas/', views.estatisticas, name='estatisticas'),
     path('player/<int:player_id>/stat/<str:stat_type>/', views.player_stat, name='player_stat'),
     path('get_filtered_graph/', views.player_filtered_graph, name='get_filtered_graph'),
-    path('get_jogadores_ajax/', views.get_jogadores_ajax, name='get_jogadores_ajax'),
-    
     path('get_next_game/', views.get_next_game, name='get_next_game'),
+    
+        # Redirecionar /accounts/login/ para /login/
+    path('accounts/login/', lambda request: redirect('login')),
+
 ]

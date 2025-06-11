@@ -44,6 +44,9 @@ import plotly.io as pio
 import numpy as np
 from scipy.stats import norm
 
+# IMPORTS INTERNOS
+from .utils import make_request
+
 
 
 def get_current_season():
@@ -85,7 +88,7 @@ def registo_view(request):
         if form.is_valid():
             user = form.save()  
             login(request, user)  
-            return redirect('Perfil')  
+            return redirect('perfil')  
     else:
         form = RegistroForm() 
     return render(request, 'Registo.html', {'form': form})
@@ -113,7 +116,7 @@ def login_view(request):
             return redirect('home')  
         else:
             messages.error(request, "❌ Nome de Utilizador ou senha incorretos.")  
-            return redirect('Login')  
+            return redirect('login')  
         
     return render(request, 'Login.html')
 
@@ -189,16 +192,16 @@ def editar_perfil(request):
             user = form.save(commit=False)
 
             password = form.cleaned_data.get('password')
-            if password:
+            if password:  # só atualiza se o campo não for vazio
                 user.set_password(password)
-            
+
             user.save()
 
-            if 'password' in form.changed_data:
+            # Atualiza sessão se a senha foi alterada
+            if 'password' in form.changed_data and password:
                 update_session_auth_hash(request, user)
 
-            # Responde com um JSON indicando que a foto foi salva e redirecionamento
-            return JsonResponse({'redirect_url': '/perfil/'})  # Pode mudar para onde quiser redirecionar
+            return JsonResponse({'redirect_url': '/perfil/'})
         else:
             return JsonResponse({'error': 'Formulário inválido!'}, status=400)
 
@@ -220,7 +223,6 @@ def home(request):
     Returns:
         HttpResponse: Página inicial com dados dos jogos e apostas.
     """
-    print(f"Cache key: home_{request.user.id}")
     def format_game_time(time_str):
         if time_str and time_str.startswith("PT"):
             try:
@@ -242,42 +244,21 @@ def home(request):
                 return time_local.strftime("%H:%M")
         return "–"
 
-    filtro = request.GET.get('filtro', '24h')
-    today = datetime.now().date()
-    now = datetime.now(timezone.utc)
+    filtro = request.GET.get('filtro', 'pendentes')  # por defeito: 'pendentes'
 
-    if filtro == 'hoje':
-        inicio = datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc)
-        fim = now
-    elif filtro == 'ontem':
-        ontem = today - timedelta(days=1)
-        inicio = datetime.combine(ontem, datetime.min.time(), tzinfo=timezone.utc)
-        fim = datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc)
-    elif filtro == '2dias':
-        inicio = now - timedelta(days=2)
-        fim = now
-    elif filtro == '7dias':
-        inicio = now - timedelta(days=7)
-        fim = now
-    elif filtro == '15dias':
-        inicio = now - timedelta(days=15)
-        fim = now
-    elif filtro == 'pendentes':
-        inicio = fim = None
-    else:
-        inicio = now - timedelta(hours=24)
-        fim = now
-
-    if filtro == 'pendentes':
+    if filtro == 'ganhas':
+        apostas_simples = Aposta.objects.filter(user=request.user, status="ganha")
+        apostas_multipla = ApostaMultipla.objects.filter(user=request.user, status="ganha")
+    elif filtro == 'perdidas':
+        apostas_simples = Aposta.objects.filter(user=request.user, status="perdida")
+        apostas_multipla = ApostaMultipla.objects.filter(user=request.user, status="perdida")
+    else:  # padrão = pendentes
         apostas_simples = Aposta.objects.filter(user=request.user, status="pendente")
         apostas_multipla = ApostaMultipla.objects.filter(user=request.user, status="pendente")
-        apostas_em_multipla = apostas_multipla.values_list('apostas__id', flat=True)
-        apostas_simples = apostas_simples.exclude(id__in=apostas_em_multipla)
-    else:
-        apostas = Aposta.objects.filter(user=request.user, data_aposta__range=(inicio, fim))
-        apostas_multipla = ApostaMultipla.objects.filter(user=request.user, data_aposta__range=(inicio, fim))
-        aposta_ids_multipla = apostas_multipla.values_list('apostas__id', flat=True)
-        apostas_simples = apostas.exclude(id__in=aposta_ids_multipla)
+
+    # Excluir apostas simples que já estão em múltiplas
+    apostas_em_multipla = apostas_multipla.values_list('apostas__id', flat=True)
+    apostas_simples = apostas_simples.exclude(id__in=apostas_em_multipla)
 
     # Buscar apostas pendentes do utilizador
     apostas_pendentes = Aposta.objects.filter(user=request.user, status="pendente")
@@ -346,8 +327,7 @@ def home(request):
         'jogos': jogos,
         'mensagem': mensagem,
     })
-
-
+    
 def gerar_grafico_lucro_simplificado(user):
     """
     Gera um gráfico de linha mostrando o lucro/prejuízo acumulado do utilizador ao longo do tempo.
@@ -358,25 +338,41 @@ def gerar_grafico_lucro_simplificado(user):
     Returns:
         str: HTML do gráfico Plotly.
     """
-    apostas = Aposta.objects.filter(
+
+    def formatar_data(data):
+        if isinstance(data, str):
+            try:
+                return datetime.strptime(data, '%d/%m/%Y')
+            except ValueError:
+                return None
+        return data
+
+    # 1) Obter apostas simples VÁLIDAS (excluindo apostas em múltiplas ganhas ou perdidas)
+    apostas_simples = Aposta.objects.filter(
         user=user,
-        status__in=["ganha", "perdida", "cancelada"]
+        status__in=['ganha', 'perdida', 'cancelada']
     ).exclude(
-        status="ganha",
-        apostamultipla__status="perdida"
+        Q(status='ganha') | Q(status='perdida'),
+        apostamultipla__status__in=['ganha', 'perdida']
+    )
+
+    # 2) Obter apostas múltiplas (apostas feitas dentro de múltiplas ganhas ou perdidas)
+    apostas_multipla = ApostaMultipla.objects.filter(
+        user=user,
+        status__in=['ganha', 'perdida']
     )
 
     lucro_por_dia = defaultdict(float)
     contagem_por_dia = defaultdict(int)
     jogadores_por_dia = defaultdict(list)
 
-    for aposta in apostas:
-        dia_str = aposta.data_jogo or aposta.data_aposta.strftime('%d/%m/%Y')
-
-        try:
-            dia_formatado = datetime.strptime(dia_str, '%d/%m/%Y').strftime('%d/%m/%Y')
-        except ValueError:
+    # Processar apostas simples válidas
+    for aposta in apostas_simples:
+        data = aposta.data_jogo or aposta.data_aposta
+        data_dt = formatar_data(data)
+        if not data_dt:
             continue
+        dia_str = data_dt.strftime('%d/%m/%Y')
 
         if aposta.status == "ganha":
             lucro = float(aposta.possiveis_ganhos) - float(aposta.valor_apostado)
@@ -385,10 +381,30 @@ def gerar_grafico_lucro_simplificado(user):
         else:
             lucro = 0  # canceladas
 
-        lucro_por_dia[dia_formatado] += lucro
-        contagem_por_dia[dia_formatado] += 1
-        jogadores_por_dia[dia_formatado].append(aposta.jogador)
+        lucro_por_dia[dia_str] += lucro
+        contagem_por_dia[dia_str] += 1
+        jogadores_por_dia[dia_str].append(aposta.jogador)
 
+    # Processar apostas múltiplas (cada múltipla conta como uma única aposta, valor apostado e ganhos da múltipla)
+    for multipla in apostas_multipla:
+        data_dt = formatar_data(multipla.data_aposta)
+        if not data_dt:
+            continue
+        dia_str = data_dt.strftime('%d/%m/%Y')
+
+        if multipla.status == "ganha":
+            lucro = float(multipla.possiveis_ganhos) - float(multipla.valor_apostado)
+        else:  # perdida
+            lucro = -float(multipla.valor_apostado)
+
+        lucro_por_dia[dia_str] += lucro
+        contagem_por_dia[dia_str] += 1
+
+        # Adicionar os jogadores das apostas da múltipla para o hover (lista única)
+        jogadores_na_multipla = list(multipla.apostas.values_list('jogador', flat=True))
+        jogadores_por_dia[dia_str].extend(jogadores_na_multipla)
+
+    # Ordenar as datas
     dias_ordenados = sorted(
         lucro_por_dia.keys(),
         key=lambda x: datetime.strptime(x, '%d/%m/%Y')
@@ -401,7 +417,7 @@ def gerar_grafico_lucro_simplificado(user):
     for dia in dias_ordenados:
         acumulado += round(lucro_por_dia[dia], 2)
         valores.append(acumulado)
-        jogadores_str = ", ".join(jogadores_por_dia[dia])
+        jogadores_str = ", ".join(set(jogadores_por_dia[dia]))  # evita duplicados
         hover_texts.append(
             f"<b>{dia}</b><br>Lucro: {acumulado:.2f}€<br>Apostas: {contagem_por_dia[dia]}<br>Jogadores: {jogadores_str}"
         )
@@ -428,7 +444,7 @@ def gerar_grafico_lucro_simplificado(user):
         xaxis_title="Data",
         yaxis_title="Lucro (€)",
         template="simple_white",
-        height=1000,
+        height=800,
         shapes=[
             dict(
                 type="line",
@@ -455,53 +471,86 @@ def estatisticas(request):
     """
     View que exibe estatísticas gerais das apostas do utilizador.
     Mostra totais, taxas de sucesso, lucro/prejuízo e um gráfico de desempenho.
-    
+
     Args:
         request: HttpRequest do Django.
-    
+
     Returns:
         HttpResponse: Página de estatísticas com dados e gráfico.
     """
     user = request.user
     apostas = Aposta.objects.filter(user=user)
+    apostas_multipla = ApostaMultipla.objects.filter(user=user)
 
     total = apostas.count()
     pendentes = apostas.filter(status='pendente').count()
     ganhas = apostas.filter(status='ganha').count()
     perdidas = apostas.filter(status='perdida').count()
     canceladas = apostas.filter(status='cancelada').count()
+
     sucesso = round((ganhas / total) * 100, 2) if total else 0
 
-    # 🔍 Apostas ganhas válidas (excluindo se em múltiplas perdidas)
+    # 🔍 Apostas ganhas válidas (excluindo apostas em múltiplas ganhas ou perdidas)
     apostas_validas_ganhas = Aposta.objects.filter(
         user=user,
         status='ganha'
     ).exclude(
-        apostamultipla__status='perdida'
+        Q(apostamultipla__status='perdida') | Q(apostamultipla__status='ganha')
     )
 
-    ganhos_total = apostas_validas_ganhas.aggregate(Sum('possiveis_ganhos'))['possiveis_ganhos__sum'] or 0
+    # 💰 Cálculo dos ganhos totais
+    ganhos_simples = apostas_validas_ganhas.aggregate(Sum('possiveis_ganhos'))['possiveis_ganhos__sum'] or 0
+    ganhos_multipla = apostas_multipla.filter(status='ganha').aggregate(Sum('possiveis_ganhos'))['possiveis_ganhos__sum'] or 0
+    ganhos_total = ganhos_simples + ganhos_multipla
 
-    # 💡 Valor apostado nas válidas (ganhas válidas + perdidas)
+    # 💡 Valor apostado nas válidas
+
+    # Apostas simples válidas: somente as que NÃO fazem parte de múltiplas
     apostas_validas_para_apostado = Aposta.objects.filter(
-        Q(user=user),
-        Q(status='perdida') | Q(
-            Q(status='ganha') & ~Q(apostamultipla__status='perdida')
-        )
+        user=user,
+        apostamultipla__isnull=True,
+        status__in=['ganha', 'perdida']
     )
+    apostado_simples = apostas_validas_para_apostado.aggregate(Sum('valor_apostado'))['valor_apostado__sum'] or 0
 
-    apostado_total = apostas_validas_para_apostado.aggregate(Sum('valor_apostado'))['valor_apostado__sum'] or 0
+    # Valor apostado em múltiplas (ganhas + perdidas)
+    apostado_multipla = apostas_multipla.filter(
+        status__in=['ganha', 'perdida']
+    ).aggregate(Sum('valor_apostado'))['valor_apostado__sum'] or 0
 
+    apostado_total = apostado_simples + apostado_multipla
     lucro = ganhos_total - apostado_total
 
-    # DEBUG opcional
-    print("🧾 DEBUG: Apostas ganhas que contam para o lucro:")
+    # DEBUG detalhado
+    """print("\n📊 DEBUG DETALHADO DAS APOSTAS:")
+
+    print("\n🎯 APOSTAS SIMPLES GANHAS (não em múltiplas):")
     for aposta in apostas_validas_ganhas:
         print(f" - {aposta.jogador} | {aposta.tipo_aposta} | Apostado: {aposta.valor_apostado}€ | Ganhos: {aposta.possiveis_ganhos}€")
 
-    print(f"💰 Total apostado válido: {apostado_total}€")
-    print(f"💸 Total ganhos válidos: {ganhos_total}€")
-    print(f"📊 Lucro/Prejuízo final: {lucro}€")
+    print("\n❌ APOSTAS SIMPLES PERDIDAS:")
+    apostas_perdidas = Aposta.objects.filter(user=user, status='perdida').exclude(apostamultipla__status='ganha')
+    for aposta in apostas_perdidas:
+        print(f" - {aposta.jogador} | {aposta.tipo_aposta} | Apostado: {aposta.valor_apostado}€ | Perdido: {aposta.valor_apostado}€")
+
+    print("\n🎲 APOSTAS MÚLTIPLAS GANHAS:")
+    for multipla in apostas_multipla.filter(status='ganha'):
+        print(f"\nMúltipla #{multipla.id} | Apostado: {multipla.valor_apostado}€ | Ganhos: {multipla.possiveis_ganhos}€")
+        print("Apostas na múltipla:")
+        for aposta in multipla.apostas.all():
+            print(f" - {aposta.jogador} | {aposta.tipo_aposta} | Odd: {aposta.odds}")
+
+    print("\n❌ APOSTAS MÚLTIPLAS PERDIDAS:")
+    for multipla in apostas_multipla.filter(status='perdida'):
+        print(f"\nMúltipla #{multipla.id} | Apostado: {multipla.valor_apostado}€ | Perdido: {multipla.valor_apostado}€")
+        print("Apostas na múltipla:")
+        for aposta in multipla.apostas.all():
+            print(f" - {aposta.jogador} | {aposta.tipo_aposta} | Odd: {aposta.odds}")
+
+    print("\n💰 RESUMO FINAL:")
+    print(f"Total apostado válido: {apostado_total}€")
+    print(f"Total ganhos válidos: {ganhos_total}€")
+    print(f"Lucro/Prejuízo final: {lucro}€")"""
 
     grafico_html = gerar_grafico_lucro_simplificado(user)
 
@@ -515,6 +564,8 @@ def estatisticas(request):
         'lucro_prejuizo': round(lucro, 2),
         'grafico_html': grafico_html,
     })
+
+
 
 
 
@@ -534,20 +585,24 @@ def get_best_bets_data(request):
     cache_key = "best_bets_data"
     cached_data = cache.get(cache_key)
     if cached_data:
-        return cached_data
+        sugestoes_por_jogo, mensagem = cached_data
+        
+        # Verificar jogos ativos fora do cache
+        board = scoreboard.ScoreBoard()
+        games = board.games.get_dict()
+        jogos_ids_ativos = {g['gameId'] for g in games if g.get('gameStatus') == 1}
+        sugestoes_por_jogo = [j for j in sugestoes_por_jogo if str(j['game_id']) in jogos_ids_ativos]
+        
+        return sugestoes_por_jogo, mensagem
 
-    print("\n🔍 INICIANDO FUNÇÃO GET_BEST_BETS_DATA")
     
     # Cache global para scraping e logs
     scraping_cache = {}
     logs_cache = {}
     
     try:
-        # 1. Obter jogos do dia
-        print("\n📅 Buscando jogos do dia...")
         sb = scoreboard.ScoreBoard()
         games = sb.games.get_dict()
-        print(f"✅ Encontrados {len(games)} jogos")
 
         jogos_do_dia = []
         for game in games:
@@ -729,15 +784,16 @@ def get_best_bets_data(request):
             except Exception:
                 continue
 
-        # Filtrar sugestões para mostrar só jogos ainda não iniciados
+        resultado = (sugestoes_por_jogo, None)
+        cache.set(cache_key, resultado, 60 * 240)  # 4hrs
+        
+        # Verificar jogos ativos fora do cache
         board = scoreboard.ScoreBoard()
         games = board.games.get_dict()
         jogos_ids_ativos = {g['gameId'] for g in games if g.get('gameStatus') == 1}
         sugestoes_por_jogo = [j for j in sugestoes_por_jogo if str(j['game_id']) in jogos_ids_ativos]
-
-        resultado = (sugestoes_por_jogo, None)
-        cache.set(cache_key, resultado, 60 * 120)  # 2hrs
-        return resultado
+        
+        return sugestoes_por_jogo, None
 
     except Exception as e:
         print(f"❌ Erro geral em get_best_bets_data: {e}")
@@ -815,7 +871,7 @@ def normalize_name(name):
     return unidecode(re.sub(r"\s+", " ", name.strip().lower()))
 
 
-def find_active_player_id_by_partial_name(abbreviated_name, team_id=None, season=get_current_season()):
+def find_active_player_id_by_partial_name(abbreviated_name, team_id=None):
     """
     Encontra o ID de um jogador ativo pelo nome parcial.
     
@@ -827,6 +883,9 @@ def find_active_player_id_by_partial_name(abbreviated_name, team_id=None, season
     Returns:
         int: ID do jogador se encontrado, None caso contrário.
     """
+    
+    season=get_current_season()
+    
     try:
         # Obtém a lista de todos os jogadores ativos
         all_players = players.get_active_players()
@@ -901,21 +960,28 @@ def find_active_player_id_by_partial_name(abbreviated_name, team_id=None, season
 def my_bets(request):
     """
     View para exibição das apostas do utilizador.
-    
+
     Args:
         request: HttpRequest do Django.
-    
+
     Returns:
         HttpResponse: Página com lista de apostas do utilizador.
     """
     filtro = request.GET.get('filtro', 'todas')
 
+    # Todas as apostas simples e múltiplas do utilizador
     apostas = Aposta.objects.filter(user=request.user)
     apostas_multipla = ApostaMultipla.objects.filter(user=request.user)
 
-    aposta_ids_multipla = apostas_multipla.values_list('apostas__id', flat=True)
-    apostas_simples = apostas.exclude(id__in=aposta_ids_multipla)
+    # Obter IDs das apostas que pertencem a múltiplas (sem duplicados)
+    ids_multipla = set()
+    for multipla in apostas_multipla:
+        ids_multipla.update(multipla.apostas.values_list('id', flat=True))
 
+    # Excluir essas apostas do conjunto de simples
+    apostas_simples = apostas.exclude(id__in=ids_multipla)
+
+    # Aplicar filtros de estado
     if filtro == 'ganhas':
         apostas_simples = apostas_simples.filter(status='ganha')
         apostas_multipla = apostas_multipla.filter(status='ganha')
@@ -931,6 +997,7 @@ def my_bets(request):
         'apostas_multipla': apostas_multipla,
         'filtro': filtro
     })
+
 
 
 # Logout 
@@ -987,7 +1054,14 @@ def criar_aposta(request):
 
                     jogador = aposta_data.get('playerName')
                     tipo_aposta = aposta_data.get('betType')
-                    odd = Decimal(str(aposta_data.get('odd', 1)))
+                    
+                    # Garante que a odd seja um número válido
+                    try:
+                        odd_value = float(aposta_data.get('odd', 1))
+                        odd = Decimal(str(odd_value))
+                    except (ValueError, TypeError):
+                        odd = Decimal('1.0')
+                        
                     jogo_id = aposta_data.get('gameId') or ''
                     data_jogo = aposta_data.get('gameDate') or ''
                     home_team = aposta_data.get('homeTeam') or ''
@@ -1026,7 +1100,14 @@ def criar_aposta(request):
 
                 jogador = aposta_data.get('playerName')
                 tipo_aposta = aposta_data.get('betType')
-                odd = Decimal(str(aposta_data.get('odd', 1)))
+                
+                # Garante que a odd seja um número válido
+                try:
+                    odd_value = float(aposta_data.get('odd', 1))
+                    odd = Decimal(str(odd_value))
+                except (ValueError, TypeError):
+                    odd = Decimal('1.0')
+                    
                 jogo_id = aposta_data.get('gameId') or ''
                 data_jogo = aposta_data.get('gameDate') or ''
                 home_team = aposta_data.get('homeTeam') or ''
@@ -1096,25 +1177,6 @@ def search_ajax(request):
     return JsonResponse({'jogadores': filtered_players})
 
 
-# Função personalizada de Session com timeout
-class NBAStatsHTTPWithTimeout(requests.Session):
-    def __init__(self, timeout=120):
-        super().__init__()
-        self.timeout = timeout  # Timeout configurado
-    
-    def send_api_request(self, url, params=None):
-        try:
-            # Faz a requisição GET com timeout configurado
-            response = self.get(url, params=params, timeout=self.timeout)
-            response.raise_for_status()  # Se a resposta for 4xx/5xx, lança uma exceção
-            return response.json()
-        except requests.exceptions.Timeout:
-            print(f"Erro: O tempo de resposta da API da NBA excedeu o limite de {self.timeout} segundos.")
-            return None
-        except requests.exceptions.RequestException as e:
-            print(f"Erro ao acessar a API da NBA: {e}")
-            return None
-
 # Função para obter dados do PlayerIndex e calcular a idade
 def get_player_info(player_id):
     """
@@ -1126,49 +1188,34 @@ def get_player_info(player_id):
     Returns:
         dict: Informações do jogador.
     """
-    try:
-        # Usar a classe personalizada NBAStatsHTTPWithTimeout com timeout de 60 segundos
-        player_data = commonplayerinfo.CommonPlayerInfo(player_id=player_id, http_session=NBAStatsHTTPWithTimeout(timeout=60))
+    player_data = commonplayerinfo.CommonPlayerInfo(player_id=player_id)
 
-        player_df = player_data.common_player_info.get_data_frame()
+    player_df = player_data.common_player_info.get_data_frame()
 
-        # Verifica se o DataFrame tem dados
-        if player_df.empty:
-            raise ValueError(f"Não foi possível encontrar informações para o jogador ID {player_id}")
+    # Seleciona as colunas relevantes (nome, altura, peso, time, e data de nascimento)
+    player_filtered = player_df[['FIRST_NAME', 'LAST_NAME', 'HEIGHT', 'WEIGHT', 'TEAM_NAME', 'BIRTHDATE', 'TEAM_ID']]
 
-        # Seleciona as colunas relevantes
-        player_filtered = player_df[['FIRST_NAME', 'LAST_NAME', 'HEIGHT', 'WEIGHT', 'TEAM_NAME', 'BIRTHDATE', 'TEAM_ID']]
-
-        # Função para calcular a idade do jogador a partir da data de nascimento
-        def calculate_age(birth_date):
-            try:
-                birth_date = datetime.strptime(birth_date.split('T')[0], "%Y-%m-%d")
-                age = (datetime.now() - birth_date).days // 365
-                return age
-            except Exception as e:
-                print(f"Erro ao calcular a idade para a data {birth_date}: {e}")
-                return None
-        
-        # Função para converter altura de pés e polegadas para metros
-        def converter_height_to_meters(height):
-            try:
-                feet, inches = map(int, height.split('-'))
-                meters = (feet * 0.3048) + (inches * 0.0254)
-                return round(meters, 2)
-            except Exception as e:
-                print(f"Erro ao converter altura {height}: {e}")
-                return None
-
-        # Aplica as funções para calcular a idade e converter altura
-        player_filtered['AGE'] = player_filtered['BIRTHDATE'].apply(calculate_age)
-        player_filtered['HEIGHT_METERS'] = player_filtered['HEIGHT'].apply(converter_height_to_meters)
-
-        # Retorna as informações filtradas do jogador
-        return player_filtered[['FIRST_NAME', 'LAST_NAME', 'HEIGHT_METERS', 'AGE', 'TEAM_NAME', 'TEAM_ID']].iloc[0]
+    # Função para calcular a idade do jogador a partir da data de nascimento
+    def calculate_age(birth_date):
+        birth_date = datetime.strptime(birth_date.split('T')[0], "%Y-%m-%d") 
+        age = (datetime.now() - birth_date).days // 365  
+        return age
     
-    except Exception as e:
-        print(f"Erro ao obter dados do jogador ID {player_id}: {e}")
-        return None
+    # Função para converter altura de pés e polegadas para metros
+    def converter_height_to_meters(height):
+        # Divide a altura em pés e polegadas
+        feet, inches = map(int, height.split('-'))
+
+        # Converte para metros
+        meters = (feet * 0.3048) + (inches * 0.0254)
+        
+        return round(meters, 2)
+
+    player_filtered['AGE'] = player_filtered['BIRTHDATE'].apply(calculate_age)
+
+    player_filtered['HEIGHT_METERS'] = player_filtered['HEIGHT'].apply(converter_height_to_meters)
+
+    return player_filtered[['FIRST_NAME', 'LAST_NAME', 'HEIGHT_METERS', 'AGE', 'TEAM_NAME', 'TEAM_ID']].iloc[0]
 
 
 
@@ -1472,9 +1519,8 @@ def extract_player_data(li_elements, status_classes, team_id):
     return players
 
 
-
 # Função para obter o horário do jogo
-def get_game_time(home_team_name, away_team_name, live_games):
+#def get_game_time(home_team_name, away_team_name, live_games):
     """
     Obtém o horário de um jogo específico.
     
@@ -1576,6 +1622,8 @@ def next_games(request):
                 # Encontra as equipas pelo código de abreviação
                 team_home = teams.find_team_by_abbreviation(team_home_abbr)
                 team_away = teams.find_team_by_abbreviation(team_away_abbr)
+                print("team_home: ", team_home)
+                print("team_away: ", team_away)
 
                 team_home_id = team_home['id'] if team_home else None
                 team_away_id = team_away['id'] if team_away else None
@@ -1613,26 +1661,20 @@ def next_games(request):
                     "game_time": game_time
                 }
 
-                # ================= HOME TEAM ===================
+                # HOME TEAM 
                 if expected_lineups_home:
                     home_li = expected_lineups_home[0].find_all("li")
                     
                     # Extrai jogadores confirmados
-                    lineup_home = extract_player_data(home_li, 
-                                                      ["is-pct-play-100", "is-pct-play-75", "is-pct-play-50"],
-                                                      team_home_id)
+                    lineup_home = extract_player_data(home_li, ["is-pct-play-100", "is-pct-play-75", "is-pct-play-50"], team_home_id)
 
                     # Extrai jogadores GTD (Game-Time Decision)
-                    gtd_home = extract_player_data(home_li, 
-                                                   ["is-pct-play-50", "is-pct-play-75", "is-pct-play-25"], 
-                                                   team_home_id)
+                    gtd_home = extract_player_data(home_li, ["is-pct-play-50", "is-pct-play-75", "is-pct-play-25"], team_home_id)
 
                     # Extrai jogadores fora
-                    out_home = extract_player_data(home_li, 
-                                                   ["is-pct-play-0", "is-ofs"], 
-                                                   team_home_id)
+                    out_home = extract_player_data(home_li, ["is-pct-play-0", "is-ofs"], team_home_id)
 
-                    # Guarda apenas os 5 primeiros titulares
+                    # Guarda apenas os 5 primeiros (titulares)
                     game_info["home_team"]["lineup"] = lineup_home[:5]
 
                     # Remove duplicados dos GTD
@@ -1649,21 +1691,15 @@ def next_games(request):
                     home_gtd_players.append({"team": game_info["home_team"]["name"], "players": gtd_home_unique})
                     home_out_players.append({"team": game_info["home_team"]["name"], "players": out_home})
 
-                # ================= AWAY TEAM ===================
+                #  AWAY TEAM 
                 if expected_lineups_away:
                     away_li = expected_lineups_away[0].find_all("li")
                     
-                    lineup_away = extract_player_data(away_li, 
-                                                      ["is-pct-play-100", "is-pct-play-75", "is-pct-play-50"],
-                                                      team_away_id)
+                    lineup_away = extract_player_data(away_li, ["is-pct-play-100", "is-pct-play-75", "is-pct-play-50"], team_away_id)
 
-                    gtd_away = extract_player_data(away_li, 
-                                                   ["is-pct-play-50", "is-pct-play-75", "is-pct-play-25"], 
-                                                   team_away_id)
+                    gtd_away = extract_player_data(away_li, ["is-pct-play-50", "is-pct-play-75", "is-pct-play-25"], team_away_id)
 
-                    out_away = extract_player_data(away_li, 
-                                                   ["is-pct-play-0"], 
-                                                   team_away_id)
+                    out_away = extract_player_data(away_li, ["is-pct-play-0", "is-ofs"], team_away_id)
 
                     game_info["away_team"]["lineup"] = lineup_away[:5]
 
@@ -1741,7 +1777,6 @@ def generate_stat_graph(player_info, stat_name, stat_label, season=get_current_s
     player_log = pd.concat(logs, ignore_index=True)
     player_log.columns = player_log.columns.str.upper()
 
-    # ✅ Corrige parsing de datas com abreviações (ex: "Apr 29, 2025")
     player_log['GAME_DATE'] = pd.to_datetime(player_log['GAME_DATE'], format="%b %d, %Y", errors="coerce")
     player_log = player_log[player_log['GAME_DATE'].notna()]
 
@@ -1807,8 +1842,7 @@ def generate_stat_graph(player_info, stat_name, stat_label, season=get_current_s
         textposition="auto",
     ))
 
-    fig.add_shape(type="line", x0=-0.5, x1=len(df)-0.5, y0=threshold, y1=threshold,
-                  line=dict(color="blue", width=2, dash="dash"))
+    fig.add_shape(type="line", x0=-0.5, x1=len(df)-0.5, y0=threshold, y1=threshold, line=dict(color="blue", width=2, dash="dash"))
 
     fig.add_annotation(dict(
         xref='paper',
@@ -1880,7 +1914,6 @@ def generate_stat_graph(player_info, stat_name, stat_label, season=get_current_s
             tickvals=x_vals,
             ticktext=x_vals,
             tickangle=0,
-            title="Data",
             tickfont=dict(size=12)
         ),
         yaxis_title=stat_label,
@@ -1954,7 +1987,7 @@ def player_filtered_graph(request):
             df["SEASON_TYPE"] = phase
             df.columns = df.columns.str.upper()
             df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'], errors='coerce')
-            df = df.dropna(subset=['GAME_DATE'])  # Remove registros com GAME_DATE inválido
+            df = df.dropna(subset=['GAME_DATE']) 
             df['DATA_STR'] = df['GAME_DATE'].dt.strftime('%d-%m-%Y')
             df['GAME_TYPE'] = {
                 "Regular Season": "🏀 Temporada",
@@ -2260,7 +2293,7 @@ def calculate_weighted_odds(player_points, line):
 
 
 # Busca estatísticas de um jogador, calcula linha provável e odds para a aposta
-def get_player_stats(player_name, stat_type="PTS", last_n_games=10, season=get_current_season()):
+def get_player_stats(player_name, stat_type="PTS", last_n_games=10):
     """
     Obtém estatísticas de um jogador.
     
@@ -2276,6 +2309,8 @@ def get_player_stats(player_name, stat_type="PTS", last_n_games=10, season=get_c
     column_aliases = {'3PT': 'FG3M'}
     stat_type = stat_type.upper()
 
+    season = get_current_season()
+    
     # Busca jogador pelo nome
     player_dict = players.find_players_by_full_name(player_name)
     if not player_dict:
@@ -2493,7 +2528,13 @@ def scrape_injuries_foxsports(player_name):
             if len(tds) >= 2:
                 date = tds[0].get_text(strip=True)
                 injury = tds[1].get_text(strip=True)
-                injuries.append({"date": date, "injury": injury})
+                # Troca MM/DD/YY para DD/MM/YY
+                try:
+                    mm, dd, yy = date.split('/')
+                    date_br = f"{dd}/{mm}/{yy}"
+                except Exception:
+                    date_br = date  # fallback se der erro
+                injuries.append({"date": date_br, "injury": injury})
         return injuries
     except Exception as e:
         print(f"Erro no scraping: {e}")
@@ -2705,6 +2746,17 @@ def player_stat(request, player_id, stat_type):
                 if not check_duplicate(same_team_out_formatted, p['id']):
                     same_team_out_formatted.append(formatted)
 
+        # Odds para Over e Under
+        if props_data and stat_type in props_data:
+            over_odd = props_data[stat_type].get('over_odds', 1.0)
+            under_odd = props_data[stat_type].get('under_odds', 1.0)
+        elif 'stats_data' in locals() and stats_data:
+            over_odd = stats_data.get('over_odds', 1.0)
+            under_odd = stats_data.get('under_odds', 1.0)
+        else:
+            over_odd = 1.0
+            under_odd = 1.0
+
         # Prepara os dados para renderizar o template
         player_data = {
             'full_name': f"{player_info['FIRST_NAME']} {player_info['LAST_NAME']}",
@@ -2715,6 +2767,8 @@ def player_stat(request, player_id, stat_type):
             'average_stat': threshold,
             'threshold': threshold,
             'odd': odd,
+            'over_odd': over_odd,
+            'under_odd': under_odd,
             'player_id': player_id,
             'same_team_gtd': same_team_gtd_formatted,
             'same_team_out': same_team_out_formatted,
@@ -2856,11 +2910,10 @@ def get_next_game(request):
     return JsonResponse(response_data)
 
 
-def get_player_stats_by_game_id(player_name, game_id, season=None):
-    """Obtém as estatísticas de um jogador para um jogo específico."""
-    if season is None:
-        season = get_current_season()
 
+def get_player_stats_by_game_id(player_name, game_id):
+    """Obtém as estatísticas de um jogador para um jogo específico."""
+    season = get_current_season()
     try:
         # 1. Busca ID do jogador
         player_name_clean = unidecode(player_name.strip().lower())
@@ -2959,47 +3012,34 @@ def recalcular_total_odds(multipla):
             odds *= float(aposta.odds)
     return round(odds, 2)
 
+
 # Cache global para stats e jogos indisponíveis
 STATS_CACHE = {}  # {(jogador, game_id): (stats, timestamp)}
 GAME_STATS_UNAVAILABLE = {}  # {game_id: timestamp}
 CACHE_EXPIRATION = 600  # 10 minutos em segundos
-
+@csrf_exempt
 def verificar_apostas_por_jogo(game_id, user=None):
-    """
-    Verifica e atualiza o status das apostas relacionadas a um jogo específico.
-    
-    Args:
-        game_id: ID do jogo.
-        user: Utilizador específico para verificar apostas (opcional).
-    
-    Returns:
-        None: Atualiza diretamente o status das apostas no banco de dados.
-    """
     global STATS_CACHE, GAME_STATS_UNAVAILABLE
-    
+
     try:
         print(f"🔎 Verificando apostas via player logs para o jogo {game_id}")
-        
-        # Verifica o status do jogo
+
         try:
             box = boxscore.BoxScore(game_id=game_id)
             game_data = box.game.get_dict()
             game_status = game_data.get('gameStatus', 0)
-            
-            # Se o jogo ainda não terminou (status != 3), não verifica as apostas
+
             if game_status != 3:
                 print(f"⏳ Jogo {game_id} ainda não terminou (status: {game_status})")
                 return
-                
         except Exception as e:
             print(f"⚠️ Erro ao verificar status do jogo {game_id}: {e}")
             return
-        
-        # Limpa cache expirado
+
         current_time = time_module.time()
-        GAME_STATS_UNAVAILABLE = {k: v for k, v in GAME_STATS_UNAVAILABLE.items() 
-                                if current_time - v < CACHE_EXPIRATION}
-        
+        GAME_STATS_UNAVAILABLE = {k: v for k, v in GAME_STATS_UNAVAILABLE.items()
+                                  if current_time - v < CACHE_EXPIRATION}
+
         apostas = Aposta.objects.filter(jogo_id=game_id, status="pendente")
         if user:
             apostas = apostas.filter(user=user)
@@ -3007,8 +3047,7 @@ def verificar_apostas_por_jogo(game_id, user=None):
         for aposta in apostas:
             jogador = aposta.jogador
             cache_key = (jogador, game_id)
-            
-            # Se já sabemos que não há stats para este jogo, ignora as próximas apostas deste jogo
+
             if game_id in GAME_STATS_UNAVAILABLE:
                 if current_time - GAME_STATS_UNAVAILABLE[game_id] >= CACHE_EXPIRATION:
                     print(f"🔄 Cache expirado para jogo {game_id}, verificando novamente...")
@@ -3022,7 +3061,6 @@ def verificar_apostas_por_jogo(game_id, user=None):
                 if current_time - timestamp < CACHE_EXPIRATION:
                     resultado = stats
                 else:
-                    print(f"🔄 Cache expirado para {jogador}, buscando novos dados...")
                     resultado = get_player_stats_by_game_id(jogador, game_id)
                     STATS_CACHE[cache_key] = (resultado, current_time)
             else:
@@ -3031,7 +3069,6 @@ def verificar_apostas_por_jogo(game_id, user=None):
 
             if resultado is None:
                 print(f"⚠️ {jogador} ainda sem stats disponíveis. Tentará novamente depois.")
-                # Marca este jogo como já verificado sem stats
                 GAME_STATS_UNAVAILABLE[game_id] = current_time
                 continue
 
@@ -3046,7 +3083,6 @@ def verificar_apostas_por_jogo(game_id, user=None):
 
             tipo = aposta.tipo_aposta.upper()
 
-            # Determinar qual estatística do jogador deve ser utilizada com base no tipo de aposta
             if "PTS+AST+REB" in tipo:
                 real_stat = resultado["PTS"] + resultado["AST"] + resultado["REB"]
             elif "PTS+AST" in tipo:
@@ -3071,7 +3107,6 @@ def verificar_apostas_por_jogo(game_id, user=None):
                 print(f"⚠️ Tipo de aposta desconhecido: {tipo}")
                 continue
 
-            # Verificar se a aposta é válida com base no threshold
             match = re.search(r"(\d+(\.\d+)?)", aposta.tipo_aposta)
             if not match:
                 print(f"⚠️ Threshold inválido: {aposta.tipo_aposta}")
@@ -3082,107 +3117,38 @@ def verificar_apostas_por_jogo(game_id, user=None):
 
             aposta.status = "ganha" if ganhou else "perdida"
             print(f"{'✅' if ganhou else '❌'} {aposta.jogador}: {real_stat} vs linha {threshold}")
-
             aposta.save()
 
-            # PAGAMENTO DE APOSTAS SIMPLES
             multiplas = ApostaMultipla.objects.filter(apostas=aposta, status="pendente").distinct()
+
+            # Simples: paga direto se não fizer parte de múltipla
             if not multiplas.exists() and aposta.status == "ganha":
                 ganho = (aposta.valor_apostado * Decimal(aposta.odds)).quantize(Decimal("0.01"))
                 aposta.user.saldo += ganho
                 print(f"💰 Pagamento realizado para aposta simples do usuário {aposta.user.id}. Valor ganho: {ganho}")
                 aposta.user.save()
 
-            # VERIFICAÇÃO DE APOSTAS MÚLTIPLAS
+            # Múltiplas: só se TODAS estiverem resolvidas
             for multipla in multiplas:
-                print(f"Verificando múltipla {multipla.id} com {len(multipla.apostas.all())} apostas.")
+                apostas_multipla = multipla.apostas.all()
+                print(f"🔍 Verificando múltipla {multipla.id} com {len(apostas_multipla)} apostas.")
 
-                # Verificar se todas as apostas foram ganhas
-                todas_ganhas = True
-                for aposta_multipla in multipla.apostas.all():
-                    if aposta_multipla.status != "ganha":
-                        todas_ganhas = False
-                        break
-
-                if todas_ganhas:
+                if any(ap.status == "perdida" for ap in apostas_multipla):
+                    multipla.status = "perdida"
+                    print(f"❌ Aposta múltipla {multipla.id} foi marcada como perdida.")
+                elif all(ap.status == "ganha" for ap in apostas_multipla):
                     novo_total_odds = recalcular_total_odds(multipla)
                     multipla.total_odds = novo_total_odds
                     multipla.possiveis_ganhos = (Decimal(multipla.valor_apostado) * Decimal(novo_total_odds)).quantize(Decimal("0.01"))
-
                     multipla.status = "ganha"
-                    print(f"💰 Pagamento realizado para a aposta múltipla {multipla.id}.")
                     multipla.user.saldo += multipla.possiveis_ganhos
-                    print(f"Novo saldo do usuário {multipla.user.id}: {multipla.user.saldo}")
+                    print(f"💰 Pagamento realizado para a múltipla {multipla.id}. Novo saldo: {multipla.user.saldo}")
                     multipla.user.save()
                 else:
-                    multipla.status = "perdida"
-                    print(f"❌ Aposta múltipla {multipla.id} foi marcada como perdida.")
+                    print(f"⏳ Múltipla {multipla.id} ainda em andamento.")
+                    continue  # Ainda tem apostas pendentes
 
                 multipla.save()
 
     except Exception as e:
         print(f"❌ Erro em verificar_apostas_por_jogo: {e}")
-
-    
-
-def get_jogadores_ajax(request):
-    """
-    View para obtenção de lista de jogadores via AJAX.
-    
-    Args:
-        request: HttpRequest do Django.
-    
-    Returns:
-        JsonResponse: Lista de jogadores.
-    """
-    team_id = request.GET.get("team_id")
-    estatistica = "PTS"
-    sugestoes = []
-
-    try:
-        team_id = int(team_id)
-        roster = commonteamroster.CommonTeamRoster(team_id=team_id).get_data_frames()[0]
-        amostra = roster.sample(n=min(5, len(roster)))  # Pega 5 jogadores aleatórios
-
-        for _, player in amostra.iterrows():
-            nome = player["PLAYER"]
-            info = players.find_players_by_full_name(nome)
-            if not info:
-                continue
-
-            player_id = info[0]['id']
-            stats_info = get_player_stats(nome, estatistica)  # Função original que vai buscar a linha real
-
-            if not stats_info:
-                continue
-
-            line = stats_info.get("line_used")
-            if line is None:
-                continue
-
-            # Obter os logs reais (últimos 10 jogos, qualquer tipo de temporada)
-            logs = PlayerGameLog(player_id=player_id).get_data_frames()[0]
-            logs.columns = logs.columns.str.upper()
-            recent = logs.head(10)
-
-            if estatistica not in recent.columns:
-                continue
-
-            over_count = sum(recent[estatistica] > line)
-            under_count = sum(recent[estatistica] < line)
-            total = len(recent)
-            acerto = round((over_count / total) * 100, 1) if total else 0
-            tendencia = "Over" if over_count > under_count else "Under"
-
-            sugestoes.append({
-                "nome": nome,
-                "estatistica": estatistica,
-                "linha": line,
-                "acerto": f"{acerto}%",
-                "tendencia": tendencia
-            })
-
-    except Exception as e:
-        return JsonResponse({"erro": str(e)})
-
-    return JsonResponse({"jogadores": sugestoes})

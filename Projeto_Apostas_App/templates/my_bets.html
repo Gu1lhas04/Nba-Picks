@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Minhas Apostas</title>
     <link rel="icon" type="image/png" href="{% static 'images/bola.png' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
@@ -44,28 +44,28 @@
             </section>
 
             <div class="bet-container">
-
-                {# Múltiplas Apostas #}
+                {# Apostas Múltiplas #}
                 {% for aposta_multipla in apostas_multipla %}
-                <article class="multiple-bet">
-                    <div class="multiple-header" onclick="toggleBet(this)">
+                <article class="multiple-bet" onclick="toggleBet(event)">
+                    <div class="multiple-header">
                         <span class="multiple-title">Múltipla</span>
                         <div class="multiple-odds" style="display: flex; align-items: center; gap: 6px;">
                             {% if aposta_multipla.status == "ganha" %}
-                                <img src="{% static 'Images/certo green.png' %}" alt="Won" class="resultado-img">
-                                <span style="color: #4CB92B; font-weight: bolder; font-size:20px;">Won</span>
+                                <img src="{% static 'Images/certo green.png' %}" alt="Ganha" class="resultado-img">
+                                <span style="color: #4CB92B; font-weight: bolder; font-size: 20px;">Won</span>
                             {% elif aposta_multipla.status == "perdida" %}
-                                <img src="{% static 'Images/red x.png' %}" alt="Lost" class="resultado-img">
-                                <span style="color: #ff4c4c; font-weight: bolder; font-size:20px;">Lost</span>
+                                <img src="{% static 'Images/red x.png' %}" alt="Perdida" class="resultado-img">
+                                <span style="color: #ff4c4c; font-weight: bolder; font-size: 20px;">Lost</span>
                             {% elif aposta_multipla.status == "cancelada" %}
                                 <img src="{% static 'Images/cancelada.png' %}" alt="Cancelada" class="resultado-img">
-                                <span style="color: grey; font-weight: bolder; font-size:20px;">Cancelada</span>
+                                <span style="color: grey; font-weight: bolder; font-size: 20px;">Cancelada</span>
                             {% endif %}
                             <span class="bet-gain">{{ aposta_multipla.valor_apostado }} € ➔ {{ aposta_multipla.possiveis_ganhos }} €</span>
                             <img src="{% static 'Images/seta.png' %}" alt="Expandir" class="toggle-icon" />
                         </div>
                     </div>
 
+                    {% if aposta_multipla.apostas.all %}
                     <div class="bet-details-container">
                         {% for aposta in aposta_multipla.apostas.all %}
                         <div class="bet-entry">
@@ -75,28 +75,25 @@
                                 <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
                                     {% if aposta.status == "ganha" %}
                                         <img src="{% static 'Images/certo green.png' %}" alt="Won" class="resultado-img">
-                                        <span style="color: #4CB92B; font-weight: bolder; font-size:25px;">Won</span>
+                                        <span style="color: #4CB92B; font-weight: bolder; font-size: 25px;">Won</span>
                                     {% elif aposta.status == "perdida" %}
                                         <img src="{% static 'Images/red x.png' %}" alt="Lost" class="resultado-img">
-                                        <span style="color: #ff4c4c; font-weight: bolder; font-size:25px;">Lost</span>
+                                        <span style="color: #ff4c4c; font-weight: bolder; font-size: 25px;">Lost</span>
                                     {% elif aposta.status == "cancelada" %}
                                         <img src="{% static 'Images/cancelada.png' %}" alt="Cancelada" class="resultado-img">
-                                        <span style="color: grey; font-weight: bolder; font-size:25px;">Cancelada</span>
+                                        <span style="color: grey; font-weight: bolder; font-size: 25px;">Cancelada</span>
                                     {% endif %}
                                     <span class="bet-odds">{{ aposta.odds }}</span>
                                 </div>
                             </div>
-
                             <div class="bet-details">
                                 <div class="teams-container">
                                     <div class="team">
-                                        <img src="https://upload.wikimedia.org/wikipedia/fr/5/56/Phoenix_Suns_2013.png" alt="Home Team" class="team-logo" />
                                         <span class="team-name">{{ aposta.home_team }}</span>
                                     </div>
                                     <span class="game-time">3.30</span>
                                     <div class="team">
                                         <span class="team-name">{{ aposta.away_team }}</span>
-                                        <img src="https://upload.wikimedia.org/wikipedia/fr/5/56/Phoenix_Suns_2013.png" alt="Away Team" class="team-logo" />
                                     </div>
                                 </div>
                                 <span class="bet-gain">{{ aposta.valor_apostado }} € ➔ {{ aposta.possiveis_ganhos }} €</span>
@@ -104,6 +101,7 @@
                         </div>
                         {% endfor %}
                     </div>
+                    {% endif %}
                 </article>
                 {% endfor %}
 
@@ -116,13 +114,13 @@
                         <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
                             {% if aposta.status == "ganha" %}
                                 <img src="{% static 'Images/certo green.png' %}" alt="Won" class="resultado-img">
-                                <span style="color: #4CB92B; font-weight: bolder; font-size:25px;">Won</span>
+                                <span style="color: #4CB92B; font-weight: bolder; font-size: 25px;">Won</span>
                             {% elif aposta.status == "perdida" %}
                                 <img src="{% static 'Images/red x.png' %}" alt="Lost" class="resultado-img">
-                                <span style="color: #ff4c4c; font-weight: bolder; font-size:25px;">Lost</span>
+                                <span style="color: #ff4c4c; font-weight: bolder; font-size: 25px;">Lost</span>
                             {% elif aposta.status == "cancelada" %}
                                 <img src="{% static 'Images/cancelada.png' %}" alt="Cancelada" class="resultado-img">
-                                <span style="color: grey; font-weight: bolder; font-size:25px;">Cancelada</span>
+                                <span style="color: grey; font-weight: bolder; font-size: 25px;">Cancelada</span>
                             {% endif %}
                             <span class="bet-odds">{{ aposta.odds }}</span>
                         </div>
@@ -131,26 +129,25 @@
                     <div class="bet-details">
                         <div class="teams-container">
                             <div class="team">
-                                <img src="https://upload.wikimedia.org/wikipedia/fr/5/56/Phoenix_Suns_2013.png" alt="Home Team" class="team-logo" />
                                 <span class="team-name">{{ aposta.home_team }}</span>
                             </div>
                             <span class="game-time">3.30</span>
                             <div class="team">
                                 <span class="team-name">{{ aposta.away_team }}</span>
-                                <img src="https://upload.wikimedia.org/wikipedia/fr/5/56/Phoenix_Suns_2013.png" alt="Away Team" class="team-logo" />
                             </div>
                         </div>
                         <span class="bet-gain">{{ aposta.valor_apostado }} € ➔ {{ aposta.possiveis_ganhos }} €</span>
                     </div>
                 </article>
                 {% endfor %}
-
             </div>
 
-    <script src="{% static 'js/sidebar.js' %}"></script>
-    <script src="{% static 'js/header.js' %}"></script>
-    <script src="{% static 'js/mybets.js' %}"></script>
-    <script src="{% static 'js/geral.js' %}"></script>
+            <script src="{% static 'js/sidebar.js' %}"></script>
+            <script src="{% static 'js/header.js' %}"></script>
+            <script src="{% static 'js/mybets.js' %}"></script>
+            <script src="{% static 'js/geral.js' %}"></script>
+        </main>
+    </div>
 </body>
 
 </html>
