@@ -10,6 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, Sum, Q
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
+from django.utils import timezone
+from datetime import timedelta
 
 # IMPORTS MODELS & FORMS
 from .forms import RegistroForm, PerfilForm, SaldoForm, ApostaForm, ApostaMultiplaForm
@@ -244,21 +246,52 @@ def home(request):
                 return time_local.strftime("%H:%M")
         return "–"
 
-    filtro = request.GET.get('filtro', 'pendentes')  # por defeito: 'pendentes'
+    filtro = request.GET.get('filtro', 'recentes')  # por defeito: 'recentes'
 
+    # Calcular a data de 5 dias atrás
+    
+    cinco_dias_atras = datetime.now() - timedelta(days=5)
+
+
+    # Buscar todas as apostas do usuário
     if filtro == 'ganhas':
         apostas_simples = Aposta.objects.filter(user=request.user, status="ganha")
         apostas_multipla = ApostaMultipla.objects.filter(user=request.user, status="ganha")
     elif filtro == 'perdidas':
         apostas_simples = Aposta.objects.filter(user=request.user, status="perdida")
         apostas_multipla = ApostaMultipla.objects.filter(user=request.user, status="perdida")
-    else:  # padrão = pendentes
+    elif filtro == 'pendentes':
         apostas_simples = Aposta.objects.filter(user=request.user, status="pendente")
         apostas_multipla = ApostaMultipla.objects.filter(user=request.user, status="pendente")
+    else:  # padrão = recentes (últimos 5 dias)
+        apostas_simples = Aposta.objects.filter(user=request.user, data_aposta__gte=cinco_dias_atras)
+        apostas_multipla = ApostaMultipla.objects.filter(user=request.user, data_aposta__gte=cinco_dias_atras)
 
     # Excluir apostas simples que já estão em múltiplas
     apostas_em_multipla = apostas_multipla.values_list('apostas__id', flat=True)
     apostas_simples = apostas_simples.exclude(id__in=apostas_em_multipla)
+
+    # Combinar e ordenar todas as apostas por data
+    todas_apostas = []
+    
+    # Adicionar apostas simples
+    for aposta in apostas_simples:
+        todas_apostas.append({
+            'tipo': 'simples',
+            'aposta': aposta,
+            'data': aposta.data_aposta
+        })
+    
+    # Adicionar apostas múltiplas
+    for aposta in apostas_multipla:
+        todas_apostas.append({
+            'tipo': 'multipla',
+            'aposta': aposta,
+            'data': aposta.data_aposta
+        })
+    
+    # Ordenar todas as apostas por data
+    todas_apostas.sort(key=lambda x: x['data'], reverse=True)
 
     # Buscar apostas pendentes do utilizador
     apostas_pendentes = Aposta.objects.filter(user=request.user, status="pendente")
@@ -321,8 +354,7 @@ def home(request):
     return render(request, 'index.html', {
         'game_data_live': game_data_live,
         'game_data_future': game_data_future,
-        'apostas': apostas_simples,
-        'apostas_multipla': apostas_multipla,
+        'todas_apostas': todas_apostas,
         'filtro': filtro,
         'jogos': jogos,
         'mensagem': mensagem,
@@ -444,7 +476,7 @@ def gerar_grafico_lucro_simplificado(user):
         xaxis_title="Data",
         yaxis_title="Lucro (€)",
         template="simple_white",
-        height=800,
+        height=600,
         shapes=[
             dict(
                 type="line",
@@ -967,22 +999,25 @@ def my_bets(request):
     Returns:
         HttpResponse: Página com lista de apostas do utilizador.
     """
-    filtro = request.GET.get('filtro', 'todas')
+    filtro = request.GET.get('filtro', 'todas')  # ✅ agora o padrão é mostrar todas
 
-    # Todas as apostas simples e múltiplas do utilizador
+    cinco_dias_atras = datetime.now() - timedelta(days=5)
+
+    # Buscar apostas
     apostas = Aposta.objects.filter(user=request.user)
     apostas_multipla = ApostaMultipla.objects.filter(user=request.user)
 
-    # Obter IDs das apostas que pertencem a múltiplas (sem duplicados)
+    # Excluir apostas que já estão em múltiplas
     ids_multipla = set()
     for multipla in apostas_multipla:
         ids_multipla.update(multipla.apostas.values_list('id', flat=True))
-
-    # Excluir essas apostas do conjunto de simples
     apostas_simples = apostas.exclude(id__in=ids_multipla)
 
-    # Aplicar filtros de estado
-    if filtro == 'ganhas':
+    # Filtros de estado
+    if filtro == 'recentes':
+        apostas_simples = apostas_simples.filter(data_aposta__gte=cinco_dias_atras)
+        apostas_multipla = apostas_multipla.filter(data_aposta__gte=cinco_dias_atras)
+    elif filtro == 'ganhas':
         apostas_simples = apostas_simples.filter(status='ganha')
         apostas_multipla = apostas_multipla.filter(status='ganha')
     elif filtro == 'perdidas':
@@ -991,10 +1026,29 @@ def my_bets(request):
     elif filtro == 'pendentes':
         apostas_simples = apostas_simples.filter(status='pendente')
         apostas_multipla = apostas_multipla.filter(status='pendente')
+    # caso 'todas' – não aplica filtros adicionais
+
+    # Combinar e ordenar
+    todas_apostas = []
+
+    for aposta in apostas_simples:
+        todas_apostas.append({
+            'tipo': 'simples',
+            'aposta': aposta,
+            'data': aposta.data_aposta
+        })
+
+    for aposta in apostas_multipla:
+        todas_apostas.append({
+            'tipo': 'multipla',
+            'aposta': aposta,
+            'data': aposta.data_aposta
+        })
+
+    todas_apostas.sort(key=lambda x: x['data'], reverse=True)
 
     return render(request, 'my_bets.html', {
-        'apostas': apostas_simples,
-        'apostas_multipla': apostas_multipla,
+        'todas_apostas': todas_apostas,
         'filtro': filtro
     })
 

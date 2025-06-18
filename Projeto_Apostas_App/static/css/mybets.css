@@ -251,7 +251,7 @@ body {
 .bet-container {
     flex-grow: 1;
     overflow-y: auto;
-    max-height: calc(100vh - 150px);
+    max-height: 120vh;
     padding-bottom: 10px;
 }
 

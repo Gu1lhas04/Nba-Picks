@@ -19,7 +19,7 @@ body {
 .registration-container {
   width: 100%;
   max-width: 1244px;
-  height: 830px;
+  height: 650px;
   background-color: #fff;
   border-radius: 25px;
   display: flex;
@@ -32,10 +32,6 @@ body {
   flex-direction: column;
 }
 
-.registration-header {
-  margin-bottom: 40px;
-}
-
 .back-link {
   color: #61cdf4;
   font-family: "JetBrains Mono", monospace;
@@ -44,7 +40,6 @@ body {
   text-decoration: none;
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 20px;
 }
 
 .back-link-arrow {
@@ -57,9 +52,9 @@ body {
 .registration-title {
   color: #61cdf4;
   font-family: "JetBrains Mono", monospace;
-  font-size: 40px;
+  font-size: 30px;
   font-weight: 800;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   display: flex;
   justify-content: space-around;
 }

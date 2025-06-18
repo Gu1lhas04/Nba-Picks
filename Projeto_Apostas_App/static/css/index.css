@@ -11,6 +11,7 @@
   padding: 0;
 }
 
+
 body {
   font-family: "JetBrains Mono", monospace;
 }
@@ -55,6 +56,16 @@ body {
   overflow-y: auto;
   overflow-x: clip; 
   position: relative;
+}
+
+
+@media (max-width: 1900px) {
+  .mybets-section,
+  .bestbets-section,
+  .history-section,
+  .games-section {
+    height: 350px;
+  }
 }
 
 .games-section::-webkit-scrollbar {
@@ -178,7 +189,7 @@ body {
 .bet-stats {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 35px;
   flex: 1;
   justify-content: flex-end;
 }

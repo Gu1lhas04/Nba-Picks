@@ -42,14 +42,13 @@
 }
 
 .graph{
-    width: 75%;
+    width: 60%;
 }
 
 .stats-summary {
     border-radius: 20px;
     padding: 25px 30px;
     width: 400px;
-    margin-top: 100px;
     margin-left: auto;
     background: linear-gradient(145deg, rgba(244, 162, 97, 0.9), rgba(255, 184, 108, 0.85));
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
