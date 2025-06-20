@@ -48,7 +48,7 @@
                 {% for aposta_item in todas_apostas %}
                     {% if aposta_item.tipo == 'simples' %}
                         {% with aposta=aposta_item.aposta %}
-                        <article class="bet-card">
+                        <article class="bet-card" onclick="window.location.href='{% url 'game_stats' aposta.jogo_id %}'">
                             <div class="bet-header">
                                 <h2 class="player-name">{{ aposta.jogador }} -</h2>
                                 <h3 class="over/under" style="color: #ffebcd; margin-left: 7px;">{{ aposta.tipo_aposta }}</h3>
@@ -72,7 +72,7 @@
                                     <div class="team">
                                         <span class="team-name">{{ aposta.home_team }}</span>
                                     </div>
-                                    <span class="game-time">3.30</span>
+                                    <span class="game-time">vs</span>
                                     <div class="team">
                                         <span class="team-name">{{ aposta.away_team }}</span>
                                     </div>
@@ -105,7 +105,7 @@
                             {% if aposta_multipla.apostas.all %}
                             <div class="bet-details-container">
                                 {% for aposta in aposta_multipla.apostas.all %}
-                                <div class="bet-entry">
+                                <div class="bet-entry" onclick="window.location.href='{% url 'game_stats' aposta.jogo_id %}'">
                                     <div class="bet-header">
                                         <h2 class="player-name">{{ aposta.jogador }} -</h2>
                                         <h3 class="over/under" style="color: #ffebcd; margin-left: 7px;">{{ aposta.tipo_aposta }}</h3>
@@ -128,7 +128,7 @@
                                             <div class="team">
                                                 <span class="team-name">{{ aposta.home_team }}</span>
                                             </div>
-                                            <span class="game-time">3.30</span>
+                                            <span class="game-time">vs</span>
                                             <div class="team">
                                                 <span class="team-name">{{ aposta.away_team }}</span>
                                             </div>

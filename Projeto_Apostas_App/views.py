@@ -19,7 +19,7 @@ from .models import Aposta, ApostaMultipla
 
 # IMPORTS EXTERNOS
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import commonplayerinfo, PlayerGameLog, commonteamroster, boxscoretraditionalv2
+from nba_api.stats.endpoints import commonplayerinfo, PlayerGameLog, commonteamroster
 from nba_api.live.nba.endpoints import scoreboard,boxscore, playbyplay
 from bs4 import BeautifulSoup
 from unidecode import unidecode
@@ -32,7 +32,7 @@ from requests.exceptions import Timeout
 
 # IMPORTS PADRÃO PYTHON
 from datetime import datetime, timezone, timedelta
-import time as time_module  # Renomeando para evitar conflito
+import time as time_module  
 from time import sleep
 import matplotlib
 matplotlib.use('Agg')
@@ -91,11 +91,16 @@ def registo_view(request):
             user = form.save()  
             login(request, user)  
             return redirect('perfil')  
+        else:
+            # Verifica apenas se o username já existe
+            if 'username' in form.errors:
+                for error in form.errors['username']:
+                    messages.error(request, "❌ Esse Username já está em uso")
     else:
         form = RegistroForm() 
     return render(request, 'Registo.html', {'form': form})
 
-
+# Login
 def login_view(request):
     """
     View para autenticação de utilizadores.
@@ -179,7 +184,7 @@ def carregar_saldo(request):
 
 def editar_perfil(request):
     """
-    View para edição do perfil do usuário logado.
+    View para edição do perfil do utilizador logado.
     Permite atualizar dados e foto de perfil, além de alterar a senha.
     
     Args:
@@ -253,7 +258,7 @@ def home(request):
     cinco_dias_atras = datetime.now() - timedelta(days=5)
 
 
-    # Buscar todas as apostas do usuário
+    # Buscar todas as apostas do utilizador
     if filtro == 'ganhas':
         apostas_simples = Aposta.objects.filter(user=request.user, status="ganha")
         apostas_multipla = ApostaMultipla.objects.filter(user=request.user, status="ganha")
@@ -449,9 +454,8 @@ def gerar_grafico_lucro_simplificado(user):
     for dia in dias_ordenados:
         acumulado += round(lucro_por_dia[dia], 2)
         valores.append(acumulado)
-        jogadores_str = ", ".join(set(jogadores_por_dia[dia]))  # evita duplicados
         hover_texts.append(
-            f"<b>{dia}</b><br>Lucro: {acumulado:.2f}€<br>Apostas: {contagem_por_dia[dia]}<br>Jogadores: {jogadores_str}"
+            f"<b>{dia}</b><br>Lucro: {acumulado:.2f}€"
         )
 
     fig = go.Figure()
@@ -472,11 +476,11 @@ def gerar_grafico_lucro_simplificado(user):
     ))
 
     fig.update_layout(
-        title="Lucro/Prejuízo",
-        xaxis_title="Data",
+        title="Performance",
         yaxis_title="Lucro (€)",
         template="simple_white",
-        height=600,
+        height=750,
+        width=1450,
         shapes=[
             dict(
                 type="line",
@@ -806,8 +810,13 @@ def get_best_bets_data(request):
                         
                 # Ordena as sugestões de cada time por taxa de acerto
                 for team_type in ['home', 'away']:
+                    # Ordena primeiro por número de acertos (ex: 10/10, 9/10, etc), depois por taxa_acerto
+                    def melhor_acerto(sugestoes):
+                        # Retorna o maior número de acertos (ex: 10 em 10/10)
+                        return max(int(s['over'].split('/')[0]) if s['tendencia'] == 'OVER' else int(s['under'].split('/')[0]) for s in sugestoes)
+
                     sugestoes_jogo[f'{team_type}_sugestoes'].sort(
-                        key=lambda x: max(s['taxa_acerto'] for s in x['sugestoes']),
+                        key=lambda x: (melhor_acerto(x['sugestoes']), max(s['taxa_acerto'] for s in x['sugestoes'])),
                         reverse=True
                     )
                         
@@ -1524,6 +1533,8 @@ def organizar_estatisticas(game_stats):
             'Assistências': jogador.get('statistics', {}).get('assists','N/A'),  # Assistências
             'Rebounds': jogador.get('statistics', {}).get('reboundsTotal', 'N/A'),  # Ressaltos totais
             '3P': jogador.get('statistics', {}).get('threePointersMade', 'N/A'),  # Triplos convertidos
+            'STL': jogador.get('statistics', {}).get('steals', 'N/A'),  # Roubos de bola
+            'BLK': jogador.get('statistics', {}).get('blocks', 'N/A'),  # Bloqueios
             'Turnovers': jogador.get('statistics', {}).get('turnovers', 'N/A'),  # Turnovers
             'Faltas': jogador.get('statistics', {}).get('foulsPersonal', 'N/A'),  # Faltas pessoais
         }
@@ -1874,26 +1885,18 @@ def generate_stat_graph(player_info, stat_name, stat_label, season=get_current_s
         x=x_vals,
         y=df[stat_name],
         marker_color=cores,
-        hovertext=[
-            (
-                f"{row['GAME_TYPE']} | {row['DATA_STR']} | "
-                f"{int(sum([row[col] for col in parts]))} ({' + '.join([f'{int(row[col])} {col}' for col in parts])}) | "
-                f"MIN: {int(row['MIN'])}"
-            ) if '+' in stat_name else
-            f"{row['GAME_TYPE']} | {row['DATA_STR']} | {int(row[stat_name])} {stat_name} | MIN: {int(row['MIN'])}"
-            for _, row in df.iterrows()
-        ],
-        hoverinfo="text",
         text=[
             (
-                f"<b>{int(sum([row[col] for col in parts]))} ({' + '.join([f'{int(row[col])} {col}' for col in parts])})</b><br>"
-                f"<span style='font-size:12px'>MIN: {int(row['MIN'])}</span>"
+                f"<br><b>{int(sum([row[col] for col in parts]))} {stat_name}</b><br>"
+                + "<br>".join([f"{int(row[col])} {col}" for col in parts])
+                + f"<br><span style='font-size:12px'>MIN: {int(row['MIN'])}</span>"
             ) if '+' in stat_name else
-            f"<b>{int(row[stat_name])} {stat_name}</b><br><span style='font-size:12px'>MIN: {int(row['MIN'])}</span>"
+            f"<b><br>{int(row[stat_name])} {stat_name}</b><br><span style='font-size:12px'>MIN: {int(row['MIN'])}</span>"
             for _, row in df.iterrows()
         ],
         textangle=0,
-        textposition="auto",
+        textposition="inside",
+        hoverinfo="skip",  # Adicionado para desativar hover
     ))
 
     fig.add_shape(type="line", x0=-0.5, x1=len(df)-0.5, y0=threshold, y1=threshold, line=dict(color="blue", width=2, dash="dash"))
@@ -1961,7 +1964,7 @@ def generate_stat_graph(player_info, stat_name, stat_label, season=get_current_s
     fig.update_layout(
         height=900,
         width=1800,
-        margin=dict(t=100, b=250),
+        margin=dict(t=100, b=200),
         title=f"{stat_label} nos Últimos 10 Jogos de {player_info['FIRST_NAME']} {player_info['LAST_NAME']}",
         xaxis=dict(
             tickmode='array',
@@ -3179,7 +3182,7 @@ def verificar_apostas_por_jogo(game_id, user=None):
             if not multiplas.exists() and aposta.status == "ganha":
                 ganho = (aposta.valor_apostado * Decimal(aposta.odds)).quantize(Decimal("0.01"))
                 aposta.user.saldo += ganho
-                print(f"💰 Pagamento realizado para aposta simples do usuário {aposta.user.id}. Valor ganho: {ganho}")
+                print(f"💰 Pagamento realizado para aposta simples do utilizador {aposta.user.id}. Valor ganho: {ganho}")
                 aposta.user.save()
 
             # Múltiplas: só se TODAS estiverem resolvidas

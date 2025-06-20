@@ -32,7 +32,7 @@ O NBA Best-Props é uma plataforma sofisticada que combina análise de dados e e
 - Histórico de apostas
 - Estatísticas de performance (Gráfico)
 
-### 📊 Análise Estatística~
+### 📊 Análise Estatística
 - Visualizar possiveis plantéis inicias de cada jogo (Informação importante na realização das apostas)
 - Análise de performance de jogadores
 - Comparativos históricos
@@ -169,7 +169,7 @@ DATABASE_URL=postgres://user:password@localhost:5432/nba_betting
 
 ### Acesso à Demonstração
 A plataforma está disponível para demonstração através do Ngrok:
-- **URL de Demonstração**: [Link da Demonstração](https://seu-link-ngrok.ngrok.io)
+- **URL de Demonstração**: [Link da Demonstração](https://nbabestprops.ngrok.app)
 
 ### Para Aceder à Demonstração
 1. Clique no link acima

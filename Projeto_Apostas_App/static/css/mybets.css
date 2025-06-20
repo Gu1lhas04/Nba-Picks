@@ -70,6 +70,7 @@ body {
 .bet-card:hover {
     transform: scale(1.02);
     background-color: #f4a261;
+    cursor: pointer;
 }
 
 .bet-info {
@@ -225,6 +226,12 @@ body {
     font-weight: bold;
     padding-bottom: 5px;
     padding-left: 16px;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.multiple-header:hover{
+    transform: scale(1.01);
+    cursor: pointer;
 }
 
 .bet-entry {
@@ -237,6 +244,7 @@ body {
     background-color: #f4a261;
     color: #fff;
     transform: scale(1.01);
+    cursor: pointer;
 }
 
 

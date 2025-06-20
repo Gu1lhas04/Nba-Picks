@@ -29,7 +29,7 @@
                 <div class="betting-content">
                     {% if jogos %}
                     {% for jogo in jogos %}
-                    <h3 class="mb-3">{{ jogo.away_team }} @ {{ jogo.home_team }} <span class="game-time">{{ jogo.game_time }}</span></h3>
+                    <h3 class="mb-3">{{ jogo.away_team }} vs {{ jogo.home_team }}</h3>
 
                     {% for jogador in jogo.away_sugestoes %}
                     {% for sugestao in jogador.sugestoes %}

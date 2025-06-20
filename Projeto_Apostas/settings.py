@@ -22,13 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 
-ALLOWED_HOSTS = ['*', 'https://f4d9-2001-8a0-ee58-a500-289d-74f2-b833-6bdd.ngrok-free.app']   
+ALLOWED_HOSTS = ['127.0.0.1', 'nbabestprops.ngrok.app']  
 
-
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://f4d9-2001-8a0-ee58-a500-289d-74f2-b833-6bdd.ngrok-free.app',
-]
+CSRF_TRUSTED_ORIGINS = ['https://nbabestprops.ngrok.app']
 
 LOGIN_URL = '/login/'
 

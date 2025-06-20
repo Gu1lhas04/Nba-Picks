@@ -211,6 +211,7 @@ td.player-name img.player-image {
     cursor: pointer;
 }
 
+
 .confirm-bet-header {
     text-align: center;
     margin-bottom: 20px;
@@ -363,4 +364,9 @@ td.player-name img.player-image {
         padding: 20px;
         flex-direction: column;
     }
+}
+
+th:hover{
+    cursor: pointer;
+    background-color: #ab6f3f;
 }
