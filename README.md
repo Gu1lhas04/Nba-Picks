@@ -1,4 +1,4 @@
-# 🏀 NBA Best-Props
+# 🏀 NBA Best-Picks
 
 <div align="center">
 
